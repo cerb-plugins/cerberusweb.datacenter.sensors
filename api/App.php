@@ -192,11 +192,11 @@ class WgmDatacenterSensorsDatacenterTab extends Extension_DatacenterTab {
 		
 		// Custom fields
 		
-		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.sensor'); 
+		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor'); 
 		$tpl->assign('custom_fields', $custom_fields);
 
 		if(!empty($model)) {
-			$custom_field_values = DAO_CustomFieldValue::getValuesByContextIds('cerberusweb.contexts.sensor', $model->id);
+			$custom_field_values = DAO_CustomFieldValue::getValuesByContextIds('cerberusweb.contexts.datacenter.sensor', $model->id);
 			if(isset($custom_field_values[$id]))
 				$tpl->assign('custom_field_values', $custom_field_values[$id]);
 		}
@@ -255,12 +255,12 @@ class WgmDatacenterSensorsDatacenterTab extends Extension_DatacenterTab {
 				
 				@$is_watcher = DevblocksPlatform::importGPC($_REQUEST['is_watcher'],'integer',0);
 				if($is_watcher)
-					CerberusContexts::addWatchers('cerberusweb.contexts.sensor', $id, $active_worker->id);
+					CerberusContexts::addWatchers('cerberusweb.contexts.datacenter.sensor', $id, $active_worker->id);
 			}
 			
 			// Custom field saves
 			@$field_ids = DevblocksPlatform::importGPC($_POST['field_ids'], 'array', array());
-			DAO_CustomFieldValue::handleFormPost('cerberusweb.contexts.sensor', $id, $field_ids);
+			DAO_CustomFieldValue::handleFormPost('cerberusweb.contexts.datacenter.sensor', $id, $field_ids);
 		}
 		
 		// Reload view?

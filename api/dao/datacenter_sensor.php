@@ -457,7 +457,7 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 		);
 		
 		// Custom Fields
-		$fields = DAO_CustomField::getByContext('cerberusweb.contexts.sensor');
+		$fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
 
 		if(is_array($fields))
 		foreach($fields as $field_id => $field) {
@@ -663,7 +663,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		$tpl->assign('view', $this);
 
 		// Custom fields
-		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.sensor');
+		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
 		$tpl->assign('custom_fields', $custom_fields);
 		
 		// Servers
@@ -887,7 +887,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 			DAO_DatacenterSensor::update($batch_ids, $change_fields);
 
 			// Custom Fields
-			self::_doBulkSetCustomFields('cerberusweb.contexts.sensor', $custom_fields, $batch_ids);
+			self::_doBulkSetCustomFields('cerberusweb.contexts.datacenter.sensor', $custom_fields, $batch_ids);
 			
 			unset($batch_ids);
 		}
@@ -897,7 +897,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 };
 
 class Context_Sensor extends Extension_DevblocksContext {
-	const ID = 'cerberusweb.contexts.sensor';
+	const ID = 'cerberusweb.contexts.datacenter.sensor';
 	
 	function getRandom() {
 		return DAO_DatacenterSensor::random();
@@ -912,7 +912,7 @@ class Context_Sensor extends Extension_DevblocksContext {
 		return array(
 			'id' => $model->id,
 			'name' => $model->name,
-			'permalink' => '', //$url_writer->writeNoProxy(sprintf("c=example.objects&action=profile&id=%d",$context_id), true),
+			'permalink' => $url_writer->writeNoProxy(sprintf("c=datacenter&tab=sensors&action=profile&id=%d",$context_id), true),
 		);
 	}
 	
@@ -921,7 +921,7 @@ class Context_Sensor extends Extension_DevblocksContext {
 			$prefix = 'Sensor:';
 		
 		$translate = DevblocksPlatform::getTranslationService();
-		$fields = DAO_CustomField::getByContext('cerberusweb.contexts.sensor');
+		$fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
 
 		// Polymorph
 		if(is_numeric($object)) {
@@ -977,7 +977,7 @@ class Context_Sensor extends Extension_DevblocksContext {
 			
 			$token_values['custom'] = array();
 			
-			$field_values = array_shift(DAO_CustomFieldValue::getValuesByContextIds('cerberusweb.contexts.sensor', $object->id));
+			$field_values = array_shift(DAO_CustomFieldValue::getValuesByContextIds('cerberusweb.contexts.datacenter.sensor', $object->id));
 			if(is_array($field_values) && !empty($field_values)) {
 				foreach($field_values as $cf_id => $cf_val) {
 					if(!isset($fields[$cf_id]))

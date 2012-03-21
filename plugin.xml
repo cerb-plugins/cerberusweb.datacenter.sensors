@@ -36,7 +36,7 @@
 		</file>
 		
 		<file path="api/dao/datacenter_sensor.php">
-			<class name="Context_DatacenterSensor" />
+			<class name="Context_Sensor" />
 			<class name="DAO_DatacenterSensor" />
 			<class name="Model_DatacenterSensor" />
 			<class name="SearchFields_DatacenterSensor" />

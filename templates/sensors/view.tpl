@@ -20,7 +20,7 @@
 <form id="customize{$view->id}" name="customize{$view->id}" action="#" onsubmit="return false;" style="display:none;"></form>
 <form id="viewForm{$view->id}" name="viewForm{$view->id}" action="{devblocks_url}{/devblocks_url}" method="post">
 <input type="hidden" name="view_id" value="{$view->id}">
-<input type="hidden" name="context_id" value="cerberusweb.contexts.sensor">
+<input type="hidden" name="context_id" value="cerberusweb.contexts.datacenter.sensor">
 <input type="hidden" name="id" value="{$view->id}">
 <input type="hidden" name="c" value="datacenter">
 <input type="hidden" name="a" value="">
@@ -50,7 +50,7 @@
 	</tr>
 
 	{* Column Data *}
-	{$object_watchers = DAO_ContextLink::getContextLinks('cerberusweb.contexts.sensor', array_keys($data), CerberusContexts::CONTEXT_WORKER)}
+	{$object_watchers = DAO_ContextLink::getContextLinks('cerberusweb.contexts.datacenter.sensor', array_keys($data), CerberusContexts::CONTEXT_WORKER)}
 	{foreach from=$data item=result key=idx name=results}
 
 	{if $smarty.foreach.results.iteration % 2}
@@ -62,7 +62,7 @@
 		<tr class="{$tableRowClass}">
 			<td align="center" nowrap="nowrap" style="padding:5px;">
 				<input type="checkbox" name="row_id[]" value="{$result.p_id}" style="display:none;">
-				{include file="devblocks:cerberusweb.core::internal/watchers/context_follow_button.tpl" context='cerberusweb.contexts.sensor' context_id=$result.p_id}
+				{include file="devblocks:cerberusweb.core::internal/watchers/context_follow_button.tpl" context='cerberusweb.contexts.datacenter.sensor' context_id=$result.p_id}
 			</td>
 		{foreach from=$view->view_columns item=column name=columns}
 			{if substr($column,0,3)=="cf_"}
