@@ -27,6 +27,12 @@
 		<tu tuid='dao.datacenter_sensor.metric'>
 			<tuv xml:lang="en_US"><seg>Metric</seg></tuv>
 		</tu>
+		<tu tuid='dao.datacenter_sensor.metric_type'>
+			<tuv xml:lang="en_US"><seg>Metric Type</seg></tuv>
+		</tu>
+		<tu tuid='dao.datacenter_sensor.metric_delta'>
+			<tuv xml:lang="en_US"><seg>Change</seg></tuv>
+		</tu>
 		<tu tuid='dao.datacenter_sensor.output'>
 			<tuv xml:lang="en_US"><seg>Output</seg></tuv>
 		</tu>

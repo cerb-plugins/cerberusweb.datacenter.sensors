@@ -20,9 +20,12 @@ if(!isset($tables['datacenter_sensor'])) {
 			is_disabled TINYINT(1) DEFAULT 0 NOT NULL,
 			params_json TEXT,
 			metric TEXT,
+			metric_type VARCHAR(32) DEFAULT '' NOT NULL,
+			metric_delta VARCHAR(64) DEFAULT '' NOT NULL,
 			output TEXT,
 			PRIMARY KEY (id),
 			INDEX extension_id (extension_id),
+			INDEX status (status),
 			INDEX server_id (server_id),
 			INDEX updated (updated)
 		) ENGINE=%s;

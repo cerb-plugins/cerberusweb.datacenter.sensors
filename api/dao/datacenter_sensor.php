@@ -3,14 +3,16 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 	const ID = 'id';
 	const TAG = 'tag';
 	const NAME = 'name';
-	const EXTENSION_ID = 'extension_id';
-	const SERVER_ID = 'server_id';
 	const STATUS = 'status';
+	const EXTENSION_ID = 'extension_id';
+	const PARAMS_JSON = 'params_json';
+	const SERVER_ID = 'server_id';
 	const UPDATED = 'updated';
 	const FAIL_COUNT = 'fail_count';
 	const IS_DISABLED = 'is_disabled';
-	const PARAMS_JSON = 'params_json';
 	const METRIC = 'metric';
+	const METRIC_TYPE = 'metric_type';
+	const METRIC_DELTA = 'metric_delta';
 	const OUTPUT = 'output';
 
 	static function create($fields) {
@@ -46,7 +48,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 		list($where_sql, $sort_sql, $limit_sql) = self::_getWhereSQL($where, $sortBy, $sortAsc, $limit);
 		
 		// SQL
-		$sql = "SELECT id, tag, name, extension_id, server_id, status, updated, fail_count, is_disabled, params_json, metric, output ".
+		$sql = "SELECT id, tag, name, extension_id, server_id, status, updated, fail_count, is_disabled, params_json, metric, metric_type, metric_delta, output ".
 			"FROM datacenter_sensor ".
 			$where_sql.
 			$sort_sql.
@@ -72,16 +74,21 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param string $tag
+	 * @return Model_DatacenterSensor
+	 */
 	static function getByTag($tag) {
 		$objects = self::getWhere(sprintf("%s = %s",
 			self::TAG,
 			C4_ORMHelper::qstr($tag)
 		));
 		
-		if(empty($objects))
+		if(empty($objects) || !is_array($objects))
 			return null;
 		
-		return key($objects);
+		return array_shift($objects);
 	}
 	
 	/**
@@ -103,6 +110,8 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 			$object->fail_count = $row['fail_count'];
 			$object->is_disabled = $row['is_disabled'];
 			$object->metric = $row['metric'];
+			$object->metric_type = $row['metric_type'];
+			$object->metric_delta = $row['metric_delta'];
 			$object->output = $row['output'];
 			
 			@$json = json_decode($row['params_json'], true);
@@ -169,6 +178,8 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 			"datacenter_sensor.is_disabled as %s, ".
 			"datacenter_sensor.params_json as %s, ".
 			"datacenter_sensor.metric as %s, ".
+			"datacenter_sensor.metric_type as %s, ".
+			"datacenter_sensor.metric_delta as %s, ".
 			"datacenter_sensor.output as %s ",
 				SearchFields_DatacenterSensor::ID,
 				SearchFields_DatacenterSensor::TAG,
@@ -181,6 +192,8 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 				SearchFields_DatacenterSensor::IS_DISABLED,
 				SearchFields_DatacenterSensor::PARAMS_JSON,
 				SearchFields_DatacenterSensor::METRIC,
+				SearchFields_DatacenterSensor::METRIC_TYPE,
+				SearchFields_DatacenterSensor::METRIC_DELTA,
 				SearchFields_DatacenterSensor::OUTPUT
 			);
 			
@@ -288,6 +301,8 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 	const IS_DISABLED = 'p_is_disabled';
 	const PARAMS_JSON = 'p_params_json';
 	const METRIC = 'p_metric';
+	const METRIC_TYPE = 'p_metric_type';
+	const METRIC_DELTA = 'p_metric_delta';
 	const OUTPUT = 'p_output';
 	
 	/**
@@ -308,6 +323,8 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 			self::IS_DISABLED => new DevblocksSearchField(self::IS_DISABLED, 'datacenter_sensor', 'is_disabled', $translate->_('dao.datacenter_sensor.is_disabled')),
 			self::PARAMS_JSON => new DevblocksSearchField(self::PARAMS_JSON, 'datacenter_sensor', 'params_json', null),
 			self::METRIC => new DevblocksSearchField(self::METRIC, 'datacenter_sensor', 'metric', $translate->_('dao.datacenter_sensor.metric')),
+			self::METRIC_TYPE => new DevblocksSearchField(self::METRIC_TYPE, 'datacenter_sensor', 'metric_type', $translate->_('dao.datacenter_sensor.metric_type')),
+			self::METRIC_DELTA => new DevblocksSearchField(self::METRIC_DELTA, 'datacenter_sensor', 'metric_delta', $translate->_('dao.datacenter_sensor.metric_delta')),
 			self::OUTPUT => new DevblocksSearchField(self::OUTPUT, 'datacenter_sensor', 'output', $translate->_('dao.datacenter_sensor.output')),
 		);
 		
@@ -339,6 +356,8 @@ class Model_DatacenterSensor {
 	public $is_disabled;
 	public $params = array();
 	public $metric;
+	public $metric_type;
+	public $metric_delta;
 	public $output;
 	
 	function run() {
@@ -376,17 +395,20 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		$this->renderSortAsc = true;
 
 		$this->view_columns = array(
-			SearchFields_DatacenterSensor::NAME,
 			SearchFields_DatacenterSensor::STATUS,
+			SearchFields_DatacenterSensor::NAME,
 			SearchFields_DatacenterSensor::UPDATED,
+			SearchFields_DatacenterSensor::METRIC_DELTA,
 			SearchFields_DatacenterSensor::OUTPUT,
 		);
 		
 		$this->addColumnsHidden(array(
+			SearchFields_DatacenterSensor::ID,
 			SearchFields_DatacenterSensor::PARAMS_JSON,
 		));
 		
 		$this->addParamsHidden(array(
+			SearchFields_DatacenterSensor::ID,
 			SearchFields_DatacenterSensor::PARAMS_JSON,
 		));
 		
@@ -482,7 +504,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 					'C' => 'Critical',
 				);
 				
-				$counts = $this->_getSubtotalCountForStringColumn('DAO_DatacenterSensor', $column, $label_map);
+				$counts = $this->_getSubtotalCountForStringColumn('DAO_DatacenterSensor', $column, $label_map, 'in', 'options[]');
 				break;
 				
 			case SearchFields_DatacenterSensor::IS_DISABLED:
@@ -535,6 +557,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		switch($field) {
 			case SearchFields_DatacenterSensor::EXTENSION_ID:
 			case SearchFields_DatacenterSensor::METRIC:
+			case SearchFields_DatacenterSensor::METRIC_TYPE:
 			case SearchFields_DatacenterSensor::NAME:
 			case SearchFields_DatacenterSensor::OUTPUT:
 			case SearchFields_DatacenterSensor::TAG:
@@ -543,6 +566,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				
 			case SearchFields_DatacenterSensor::ID:
 			case SearchFields_DatacenterSensor::FAIL_COUNT:
+			case SearchFields_DatacenterSensor::METRIC_DELTA:
 				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__number.tpl');
 				break;
 				
@@ -612,6 +636,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		switch($field) {
 			case SearchFields_DatacenterSensor::EXTENSION_ID:
 			case SearchFields_DatacenterSensor::METRIC:
+			case SearchFields_DatacenterSensor::METRIC_TYPE:
 			case SearchFields_DatacenterSensor::NAME:
 			case SearchFields_DatacenterSensor::OUTPUT:
 			case SearchFields_DatacenterSensor::TAG:
@@ -625,6 +650,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				
 			case SearchFields_DatacenterSensor::FAIL_COUNT:
 			case SearchFields_DatacenterSensor::ID:
+			case SearchFields_DatacenterSensor::METRIC_DELTA:
 				$criteria = new DevblocksSearchCriteria($field,$oper,$value);
 				break;
 				
@@ -765,6 +791,8 @@ class Context_Sensor extends Extension_DevblocksContext {
 			'id' => $prefix.$translate->_('common.id'),
 			'tag' => $prefix.$translate->_('common.tag'),
 			'metric' => $prefix.$translate->_('dao.datacenter_sensor.metric'),
+			'metric_type' => $prefix.$translate->_('dao.datacenter_sensor.metric_type'),
+			'metric_delta' => $prefix.$translate->_('dao.datacenter_sensor.metric_delta'),
 			'name' => $prefix.$translate->_('common.name'),
 			'output' => $prefix.$translate->_('dao.datacenter_sensor.output'),
 			'status' => $prefix.$translate->_('common.status'),
@@ -784,6 +812,8 @@ class Context_Sensor extends Extension_DevblocksContext {
 			$token_values['id'] = $object->id;
 			$token_values['tag'] = $object->tag;
 			$token_values['metric'] = $object->metric;
+			$token_values['metric_type'] = $object->metric_type;
+			$token_values['metric_delta'] = $object->metric_delta;
 			$token_values['name'] = $object->name;
 			$token_values['output'] = $object->output;
 			$token_values['status'] = $object->status;

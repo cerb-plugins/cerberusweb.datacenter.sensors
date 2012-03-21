@@ -110,6 +110,15 @@
 					{$result.$column|escape|nl2br nofilter}
 					</span>
 				</td>
+			{elseif $column == "p_metric_delta"}
+				<td>
+					{if $result.$column == 0}
+					{elseif $result.$column < 0}
+						{$result.$column}{if $result.p_metric_type=='percent'}%{/if}
+					{elseif $result.$column > 0}
+						+{$result.$column}{if $result.p_metric_type=='percent'}%{/if}
+					{/if}
+				</td>
 			{else}
 				<td>{$result.$column}</td>
 			{/if}

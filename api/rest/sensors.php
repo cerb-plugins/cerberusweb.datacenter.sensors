@@ -175,42 +175,44 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 		$payload = $this->getPayload();
 		$xml = simplexml_load_string($payload);
 		
-		$dict_tags_to_ids = array();
-		
 		foreach($xml->sensor as $eSensor) {
 			@$sensor_id = (string) $eSensor['id'];
 			@$name = (string) $eSensor->name;
+			@$status = (string) $eSensor->status;
 			@$metric = (string) $eSensor->metric;
-			//@$metric_type = (string) $eSensor->metric_type;
+			@$metric_type = (string) $eSensor->metric_type;
 			@$output = (string) $eSensor->output;
 			
+			$sensor = null;
+			
 			if(!is_numeric($sensor_id)) {
-				if(isset($dict_tags_to_ids[$sensor_id])) {
-					$sensor_id = $dict_tags_to_ids[$sensor_id];
+				// Look up by tag
+				$tag = $sensor_id;
+				
+				// Look it up or create it
+				if(null == ($sensor = DAO_DatacenterSensor::getByTag($tag))) {
+					$fields = array(
+						DAO_DatacenterSensor::TAG => $tag,
+						DAO_DatacenterSensor::NAME => (!empty($name) ? $name : $tag),
+						DAO_DatacenterSensor::EXTENSION_ID => Extension_Sensor::ID,
+						DAO_DatacenterSensor::PARAMS_JSON => json_encode(array()),
+					);
+					$sensor_id = DAO_DatacenterSensor::create($fields);
+					
 				} else {
-					// Look up by tag
-					$tag = $sensor_id;
-					
-					// Look it up or create it
-					if(null == ($sensor_id = DAO_DatacenterSensor::getByTag($tag))) {
-						$fields = array(
-							DAO_DatacenterSensor::TAG => $tag,
-							DAO_DatacenterSensor::NAME => (!empty($name) ? $name : $tag),
-							DAO_DatacenterSensor::EXTENSION_ID => Extension_Sensor::ID,
-							DAO_DatacenterSensor::PARAMS_JSON => json_encode(array()),
-						);
-						$sensor_id = DAO_DatacenterSensor::create($fields);
-					}
-					
-					if(is_numeric($sensor_id) && !empty($sensor_id))
-						$dict_tags_to_ids[$tag] = $sensor_id;
+					$sensor_id = $sensor->id;
 				}
+					
+			} else {
+				if(null == ($sensor = DAO_DatacenterSensor::get($sensor_id)))
+					$sensor_id = null;
 			}
 
 			if(is_numeric($sensor_id) && !empty($sensor_id)) {
 				$fields = array(
 					DAO_DatacenterSensor::OUTPUT => $output,
 					DAO_DatacenterSensor::METRIC => $metric,
+					DAO_DatacenterSensor::METRIC_TYPE => $metric_type,
 					DAO_DatacenterSensor::UPDATED => time(),
 				);
 				
