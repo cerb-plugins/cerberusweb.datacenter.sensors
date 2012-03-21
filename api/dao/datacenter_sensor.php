@@ -28,8 +28,104 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 	}
 	
 	static function update($ids, $fields) {
-		parent::_update($ids, 'datacenter_sensor', $fields);
+		if(!is_array($ids))
+			$ids = array($ids);
+		
+		/*
+		 * Make a diff for the requested objects in batches
+		 */
+        
+    	$chunks = array_chunk($ids, 25, true);
+    	while($batch_ids = array_shift($chunks)) {
+	    	$objects = DAO_DatacenterSensor::getWhere(sprintf("id IN (%s)", implode(',', $batch_ids)));
+	    	$object_changes = array();
+	    	
+	    	foreach($objects as $object_id => $object) {
+	    		$pre_fields = get_object_vars($object);
+	    		$changes = array();
+	    		
+	    		foreach($fields as $field_key => $field_val) {
+	    			// Make sure the value of the field actually changed
+	    			if($pre_fields[$field_key] != $field_val) {
+	    				$changes[$field_key] = array('from' => $pre_fields[$field_key], 'to' => $field_val);
+	    			}
+	    		}
+	    		
+	    		// If we had changes
+	    		if(!empty($changes)) {
+	    			$object_changes[$object_id] = array(
+	    				'model' => array_merge($pre_fields, $fields),
+	    				'changes' => $changes,
+	    			);
+	    		}
+	    	}
+	    	
+	    	// Update
+			parent::_update($ids, 'datacenter_sensor', $fields);
+			
+	    	// Local events
+	    	self::_processUpdateEvents($object_changes);
+	    	
+	        /*
+	         * Trigger an event about the changes
+	         */
+	    	if(!empty($object_changes)) {
+			    $eventMgr = DevblocksPlatform::getEventService();
+			    $eventMgr->trigger(
+			        new Model_DevblocksEvent(
+			            'dao.datacener.sensor.update',
+		                array(
+		                    'objects' => $object_changes,
+		                )
+		            )
+			    );
+	    	}
+    	}
 	}
+	
+	static function _processUpdateEvents($objects) {
+		$db = DevblocksPlatform::getDatabaseService();
+		
+    	if(is_array($objects))
+    	foreach($objects as $object_id => $object) {
+    		@$model = $object['model']; /* @var $model Model_DatacenterSensor */
+    		@$changes = $object['changes'];
+    		
+    		if(empty($model) || empty($changes))
+    			continue;
+    		
+    		// Delta
+    		@$metric = $changes[DAO_DatacenterSensor::METRIC];
+    		
+    		if(!empty($metric) && in_array($model[DAO_DatacenterSensor::METRIC_TYPE], array('updown','decimal','percent','number'))) {
+    			$delta = 0;
+    			
+    			switch($model[DAO_DatacenterSensor::METRIC_TYPE]) {
+    				case 'updown':
+    					$delta = (0 == strcasecmp($metric['to'],'UP')) ? 1 : -1;
+    					break;
+    				case 'number':
+    					$delta = intval($metric['to']) - intval($metric['from']);
+    					break;
+    				case 'decimal':
+    					$delta = floatval($metric['to']) - floatval($metric['from']);
+    					break;
+    				case 'percent':
+    					$delta = intval($metric['to']) - intval($metric['from']);
+    					break;
+    			}
+    			
+    			$sql = sprintf("UPDATE datacenter_sensor SET metric_delta = %s WHERE id = %d",
+    				$db->qstr($delta),
+    				$model[DAO_DatacenterSensor::ID]
+    			);
+    			
+    			$db->Execute($sql);
+    		}
+    		
+    		
+    	} // foreach		
+	}	
 	
 	static function updateWhere($fields, $where) {
 		parent::_updateWhere('datacenter_sensor', $fields, $where);
