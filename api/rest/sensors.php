@@ -219,6 +219,9 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 				if(!empty($name))
 					$fields[DAO_DatacenterSensor::NAME] = $name;
 				
+				if(!empty($status) && in_array($status, array('O', 'W', 'C')))
+					$fields[DAO_DatacenterSensor::STATUS] = $status;
+				
 				DAO_DatacenterSensor::update($sensor_id, $fields);
 			}
 		}

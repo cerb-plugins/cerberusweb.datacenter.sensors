@@ -601,7 +601,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				$field = new stdClass();
 				$field->options = $options;
 				$tpl->assign('field', $field);
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__cfield_picklist.tpl');
+				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__list.tpl');
 				break;
 				
 			default:
@@ -620,6 +620,22 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		$values = !is_array($param->value) ? array($param->value) : $param->value;
 
 		switch($field) {
+			case SearchFields_DatacenterSensor::STATUS:
+				$options = array(
+					'O' => 'OK',
+					'W' => 'Warning',
+					'C' => 'Critical',
+				);
+				
+				$output = array();
+				
+				foreach($values as $v) {
+					$output[] = $options[$v];
+				}
+				
+				echo implode(' or ', $output);
+				
+				break;
 			default:
 				parent::renderCriteriaParam($param);
 				break;
@@ -670,6 +686,8 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				break;
 				
 			case SearchFields_DatacenterSensor::STATUS:
+				@$options = DevblocksPlatform::importGPC($_REQUEST['options'],'array',array());
+				$criteria = new DevblocksSearchCriteria($field,$oper,$options);
 				break;
 				
 			default:
@@ -809,6 +827,12 @@ class Context_Sensor extends Extension_DevblocksContext {
 		$token_values = array();
 		
 		if($object) {
+			$status_options = array(
+				'O' => 'OK',
+				'W' => 'Warning',
+				'C' => 'Critical',
+			);
+			
 			$token_values['id'] = $object->id;
 			$token_values['tag'] = $object->tag;
 			$token_values['metric'] = $object->metric;
@@ -816,7 +840,7 @@ class Context_Sensor extends Extension_DevblocksContext {
 			$token_values['metric_delta'] = $object->metric_delta;
 			$token_values['name'] = $object->name;
 			$token_values['output'] = $object->output;
-			$token_values['status'] = $object->status;
+			$token_values['status'] = isset($status_options[$object->status]) ? $status_options[$object->status] : '';
 			$token_values['updated'] = $object->updated;
 			
 			// URL
