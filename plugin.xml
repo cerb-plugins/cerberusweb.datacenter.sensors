@@ -11,15 +11,15 @@
 	<!-- Requirements -->
 
 	<requires>
-		<app_version min="5.7.2" max="5.8.99" />
+		<app_version min="5.8.0" max="5.8.99" />
 		<php_extension name="curl" />
 	</requires>
  
 	<!-- Plugin Dependencies -->
 	
 	<dependencies>
-		<require plugin_id="cerberusweb.core" version="5.7.0" />
-		<require plugin_id="cerberusweb.datacenter" version="5.7.0" />
+		<require plugin_id="cerberusweb.core" version="5.8.0-dev" />
+		<require plugin_id="cerberusweb.datacenter" version="5.8.0-dev" />
 	</dependencies>
 
 	<!-- Patches -->
