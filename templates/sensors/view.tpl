@@ -81,13 +81,15 @@
 				</td>
 			{elseif $column=="p_status"}
 				<td>
+					<div class="badge badge-lightgray">
 					{if $result.$column == "W"}
-						<span style="color:rgb(244,184,0);">WARNING</span>
+						<span style="color:rgb(204,154,0);font-weight:bold;">Warning</span>
 					{elseif $result.$column == "C"}
-						<span style="color:rgb(200,0,0);">CRITICAL</span>
+						<span style="color:rgb(200,0,0);font-weight:bold;">Critical</span>
 					{else}
-						<span style="color:rgb(0,200,0);">OK</span>
+						<span style="color:rgb(0,180,0);font-weight:bold;">OK</span>
 					{/if}
+					</div>
 				</td>
 			{elseif $column=="p_extension_id"}
 				<td>
@@ -101,11 +103,11 @@
 			{elseif $column == "p_metric" || $column == "p_output"}
 				<td>
 					{if $result.p_status == "W"}
-						<span style="color:rgb(244,184,0);">
+						<span style="color:rgb(204,154,0);">
 					{elseif $result.p_status == "C"}
 						<span style="color:rgb(200,0,0);">
 					{else}
-						<span style="color:rgb(0,200,0);">
+						<span style="color:rgb(0,180,0);">
 					{/if}
 					{$result.$column|escape|nl2br nofilter}
 					</span>
