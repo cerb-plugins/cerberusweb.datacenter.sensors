@@ -42,6 +42,10 @@
 			<class name="SearchFields_DatacenterSensor" />
 			<class name="View_DatacenterSensor" />
 		</file>
+		
+		<file path="api/events/abstract_event_sensor.php">
+			<class name="AbstractEvent_Sensor" />
+		</file>
 	</class_loader>
 
 	<!-- Extensions -->
@@ -132,6 +136,23 @@
 			<params />
 		</extension>
 		
+		<!-- Event Triggers -->
+		
+		<extension point="devblocks.event">
+			<id>event.macro.sensor</id>
+			<name>Custom sensor behavior</name>
+			<class>
+				<file>api/events/sensor_macro.php</file>
+				<name>Event_SensorMacro</name>
+			</class>
+			<params>
+				<param key="contexts">
+					<value>
+						<data key="cerberusweb.contexts.worker" />
+					</value>
+				</param>
+			</params>
+		</extension>
 		<!-- REST Controllers -->
 		
 		<extension point="cerberusweb.rest.controller">
