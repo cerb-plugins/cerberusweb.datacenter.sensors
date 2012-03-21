@@ -13,6 +13,12 @@
 			<tuv xml:lang="en_US"><seg>Sensors</seg></tuv>
 		</tu>
 
+		<!-- Activity -->
+		
+		<tu tuid='activities.datacenter.sensor.status'>
+			<tuv xml:lang="en_US"><seg>{{sensor}} sensor status changed from {{status_from}} to {{status_to}}</seg></tuv>
+		</tu>
+
 		<!-- DAO:DatacenterSensor -->
 		
 		<tu tuid='dao.datacenter_sensor.extension_id'>

@@ -126,6 +126,35 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
     			$db->Execute($sql);
     		}
     		
+			// This can also detect when the status changes OK->PROBLEM or PROBLEM->OK
+    		
+    		$statuses = array(
+    			'O' => 'OK',
+    			'W' => 'Warning',
+    			'C' => 'Critical',
+    		);
+    		
+    		@$status = $changes[DAO_DatacenterSensor::STATUS];
+    		
+    		if(!empty($status) && !empty($model[DAO_DatacenterSensor::STATUS])) {
+				/*
+				 * Log sensor status (sensor.status.*)
+				 */
+				$entry = array(
+					//{{sensor}} sensor status changed from {{status_from}} to {{status_to}}
+					'message' => 'activities.datacenter.sensor.status',
+					'variables' => array(
+						'sensor' => sprintf("%s", $model[DAO_DatacenterSensor::NAME]),
+						'status_from' => sprintf("%s", $statuses[$status['from']]),
+						'status_to' => sprintf("%s", $statuses[$status['to']]),
+						),
+					'urls' => array(
+						//'target' => 'c=datacenter&d=display&id='.$model[DAO_Task::ID],
+						'sensor' => 'c=datacenter&d=sensors',
+						)
+				);
+				CerberusContexts::logActivity('datacenter.sensor.status', 'cerberusweb.contexts.datacenter.sensor', $object_id, $entry);
+    		}
     		
     	} // foreach		
 	}	
