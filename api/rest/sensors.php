@@ -194,7 +194,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 					$fields = array(
 						DAO_DatacenterSensor::TAG => $tag,
 						DAO_DatacenterSensor::NAME => (!empty($name) ? $name : $tag),
-						DAO_DatacenterSensor::EXTENSION_ID => Extension_Sensor::ID,
+						DAO_DatacenterSensor::EXTENSION_ID => 'cerberusweb.datacenter.sensor.external',
 						DAO_DatacenterSensor::PARAMS_JSON => json_encode(array()),
 					);
 					$sensor_id = DAO_DatacenterSensor::create($fields);
