@@ -100,30 +100,34 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
     		// Delta
     		@$metric = $changes[DAO_DatacenterSensor::METRIC];
     		
-    		if(!empty($metric) && in_array($model[DAO_DatacenterSensor::METRIC_TYPE], array('updown','decimal','percent','number'))) {
+    		if(in_array($model[DAO_DatacenterSensor::METRIC_TYPE], array('updown','decimal','percent','number'))) {
     			$delta = 0;
     			
-    			switch($model[DAO_DatacenterSensor::METRIC_TYPE]) {
-    				case 'updown':
-    					$delta = (0 == strcasecmp($metric['to'],'UP')) ? 1 : -1;
-    					break;
-    				case 'number':
-    					$delta = intval($metric['to']) - intval($metric['from']);
-    					break;
-    				case 'decimal':
-    					$delta = floatval($metric['to']) - floatval($metric['from']);
-    					break;
-    				case 'percent':
-    					$delta = intval($metric['to']) - intval($metric['from']);
-    					break;
+    			if(!empty($metric)) {
+	    			switch($model[DAO_DatacenterSensor::METRIC_TYPE]) {
+	    				case 'updown':
+	    					$delta = (0 == strcasecmp($metric['to'],'UP')) ? 1 : -1;
+	    					break;
+	    				case 'number':
+	    					$delta = intval($metric['to']) - intval($metric['from']);
+	    					break;
+	    				case 'decimal':
+	    					$delta = floatval($metric['to']) - floatval($metric['from']);
+	    					break;
+	    				case 'percent':
+	    					$delta = intval($metric['to']) - intval($metric['from']);
+	    					break;
+	    			}
     			}
     			
-    			$sql = sprintf("UPDATE datacenter_sensor SET metric_delta = %s WHERE id = %d",
-    				$db->qstr($delta),
-    				$model[DAO_DatacenterSensor::ID]
-    			);
-    			
-    			$db->Execute($sql);
+    			if(isset($model[DAO_DatacenterSensor::METRIC_DELTA]) 
+    				&& $model[DAO_DatacenterSensor::METRIC_DELTA] != $delta) {
+		    			$sql = sprintf("UPDATE datacenter_sensor SET metric_delta = %s WHERE id = %d",
+		    				$db->qstr($delta),
+		    				$model[DAO_DatacenterSensor::ID]
+		    			);
+		    			$db->Execute($sql);
+    			}
     		}
     		
 			// This can also detect when the status changes OK->PROBLEM or PROBLEM->OK
