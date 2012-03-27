@@ -345,6 +345,18 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 			
 		$sort_sql = (!empty($sortBy)) ? sprintf("ORDER BY %s %s ",$sortBy,($sortAsc || is_null($sortAsc))?"ASC":"DESC") : " ";
 	
+		// Translate virtual fields
+		
+		array_walk_recursive(
+			$params,
+			array('DAO_DatacenterSensor', '_translateVirtualParameters'),
+			array(
+				'join_sql' => &$join_sql,
+				'where_sql' => &$where_sql,
+				'has_multiple_values' => &$has_multiple_values
+			)
+		);
+		
 		return array(
 			'primary_table' => 'datacenter_sensor',
 			'select' => $select_sql,
@@ -353,6 +365,28 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 			'has_multiple_values' => $has_multiple_values,
 			'sort' => $sort_sql,
 		);
+	}
+	
+	private static function _translateVirtualParameters($param, $key, &$args) {
+		$join_sql =& $args['join_sql'];
+		$where_sql =& $args['where_sql']; 
+		$has_multiple_values =& $args['has_multiple_values'];
+		
+		if(!is_a($param, 'DevblocksSearchCriteria'))
+			return;
+		
+		$from_context = 'cerberusweb.contexts.datacenter.sensor';
+		$from_index = 'datacenter_sensor.id';
+		
+		$param_key = $param->field;
+		settype($param_key, 'string');
+		switch($param_key) {
+// 			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
+// 				$has_multiple_values = true;
+// 				self::_searchComponentsVirtualWatchers($param, $from_context, $from_index, $join_sql, $where_sql);
+// 				break;
+		}
+		
 	}
 	
     /**

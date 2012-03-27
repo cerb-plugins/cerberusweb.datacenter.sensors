@@ -46,6 +46,7 @@
 		<file path="api/events/abstract_event_sensor.php">
 			<class name="AbstractEvent_Sensor" />
 		</file>
+		
 	</class_loader>
 
 	<!-- Extensions -->
@@ -62,12 +63,14 @@
 				<name>Context_Sensor</name>
 			</class>
 			<params>
+				<param key="alias" value="sensor" />
 				<param key="view_class" value="View_DatacenterSensor" />
 				<param key="options">
 					<value>
 						<!--<data key="create" />-->
 						<data key="find" />
 						<!--<data key="snippets" />-->
+						<data key="va_variable" />
 						<data key="workspace" />
 					</value>
 				</param>
@@ -146,6 +149,7 @@
 				<name>Event_SensorMacro</name>
 			</class>
 			<params>
+				<param key="macro_context" value="cerberusweb.contexts.datacenter.sensor" />
 				<param key="contexts">
 					<value>
 						<data key="cerberusweb.contexts.worker" />
@@ -153,6 +157,7 @@
 				</param>
 			</params>
 		</extension>
+		
 		<!-- REST Controllers -->
 		
 		<extension point="cerberusweb.rest.controller">

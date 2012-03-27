@@ -18,7 +18,8 @@
 class Event_SensorMacro extends AbstractEvent_Sensor {
 	const ID = 'event.macro.sensor';
 	
-	function __construct() {
+	function __construct($manifest) {
+		parent::__construct($manifest);
 		$this->_event_id = self::ID;
 	}
 	
