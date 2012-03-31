@@ -368,10 +368,6 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 	}
 	
 	private static function _translateVirtualParameters($param, $key, &$args) {
-		$join_sql =& $args['join_sql'];
-		$where_sql =& $args['where_sql']; 
-		$has_multiple_values =& $args['has_multiple_values'];
-		
 		if(!is_a($param, 'DevblocksSearchCriteria'))
 			return;
 		
@@ -382,8 +378,8 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 		settype($param_key, 'string');
 		switch($param_key) {
 // 			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
-// 				$has_multiple_values = true;
-// 				self::_searchComponentsVirtualWatchers($param, $from_context, $from_index, $join_sql, $where_sql);
+// 				$args['has_multiple_values'] = true;
+// 				self::_searchComponentsVirtualWatchers($param, $from_context, $from_index, $args['join_sql'], $args['where_sql']);
 // 				break;
 		}
 		
@@ -751,10 +747,8 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				foreach($servers as $server)
 					$options[$server->id] = $server->name;
 				
-				$field = new stdClass();
-				$field->options = $options;
-				$tpl->assign('field', $field);
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__cfield_picklist.tpl');
+				$tpl->assign('options', $options);
+				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__list.tpl');
 				break;
 				
 			case SearchFields_DatacenterSensor::STATUS:
@@ -764,9 +758,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 					'C' => 'Critical',
 				);
 				
-				$field = new stdClass();
-				$field->options = $options;
-				$tpl->assign('field', $field);
+				$tpl->assign('options', $options);
 				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__list.tpl');
 				break;
 				
@@ -800,8 +792,21 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				}
 				
 				echo implode(' or ', $output);
-				
 				break;
+				
+			case SearchFields_DatacenterSensor::SERVER_ID:
+				$servers = DAO_Server::getAll();
+				
+				$output = array();
+				
+				foreach($values as $v) {
+					if(isset($servers[$v]))
+						$output[] = $servers[$v]->name;;
+				}
+				
+				echo implode(' or ', $output);
+				break;
+				
 			default:
 				parent::renderCriteriaParam($param);
 				break;
@@ -822,12 +827,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 			case SearchFields_DatacenterSensor::NAME:
 			case SearchFields_DatacenterSensor::OUTPUT:
 			case SearchFields_DatacenterSensor::TAG:
-				// force wildcards if none used on a LIKE
-				if(($oper == DevblocksSearchCriteria::OPER_LIKE || $oper == DevblocksSearchCriteria::OPER_NOT_LIKE)
-				&& false === (strpos($value,'*'))) {
-					$value = $value.'*';
-				}
-				$criteria = new DevblocksSearchCriteria($field, $oper, $value);
+				$criteria = $this->_doSetCriteriaString($field, $oper, $value);
 				break;
 				
 			case SearchFields_DatacenterSensor::FAIL_COUNT:
@@ -837,13 +837,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				break;
 				
 			case SearchFields_DatacenterSensor::UPDATED:
-				@$from = DevblocksPlatform::importGPC($_REQUEST['from'],'string','');
-				@$to = DevblocksPlatform::importGPC($_REQUEST['to'],'string','');
-
-				if(empty($from)) $from = 0;
-				if(empty($to)) $to = 'today';
-
-				$criteria = new DevblocksSearchCriteria($field,$oper,array($from,$to));
+				$criteria = $this->_doSetCriteriaDate($field, $oper);
 				break;
 				
 			case SearchFields_DatacenterSensor::IS_DISABLED:
@@ -851,6 +845,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				$criteria = new DevblocksSearchCriteria($field,$oper,$bool);
 				break;
 				
+			case SearchFields_DatacenterSensor::SERVER_ID:
 			case SearchFields_DatacenterSensor::STATUS:
 				@$options = DevblocksPlatform::importGPC($_REQUEST['options'],'array',array());
 				$criteria = new DevblocksSearchCriteria($field,$oper,$options);
