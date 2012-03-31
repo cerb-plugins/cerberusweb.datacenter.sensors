@@ -1030,6 +1030,10 @@ class Context_Sensor extends Extension_DevblocksContext {
 					}
 				}
 			}
+			
+			// Watchers
+			$watchers = CerberusContexts::getWatchers('cerberusweb.contexts.datacenter.sensor', $object->id, true);
+			$token_values['watchers'] = $watchers;
 		}
 
 		// Example link

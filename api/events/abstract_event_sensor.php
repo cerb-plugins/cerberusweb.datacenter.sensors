@@ -92,9 +92,17 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				'label' => 'Sensor',
 				'context' => 'cerberusweb.contexts.datacenter.sensor',
 			),
+			'sensor_watchers' => array(
+				'label' => 'Sensor watchers',
+				'context' => CerberusContexts::CONTEXT_WORKER,
+			),
 			'sensor_server_id' => array(
 				'label' => 'Server',
 				'context' => 'cerberusweb.contexts.datacenter.server',
+			),
+			'sensor_server_watchers' => array(
+				'label' => 'Server watchers',
+				'context' => CerberusContexts::CONTEXT_WORKER,
 			),
 		);
 		
