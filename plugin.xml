@@ -4,7 +4,7 @@
 	<name>Datacenter: Sensors</name>
 	<description>This plugin adds sensors to the datacenter for network and service monitoring.</description>
 	<author>WebGroup Media, LLC.</author>
-	<version>0.5.1</version>
+	<version>0.5.2</version>
 	<link>http://www.cerb5.com/</link>
 	<!--<image>plugin.png</image>-->
  
