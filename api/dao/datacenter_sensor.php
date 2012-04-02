@@ -329,7 +329,10 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 				SearchFields_DatacenterSensor::OUTPUT
 			);
 			
-		$join_sql = "FROM datacenter_sensor ";
+		$join_sql = "FROM datacenter_sensor ".
+			(isset($tables['ftcc']) ? "INNER JOIN comment ON (comment.context = 'cerberusweb.contexts.datacenter.sensor' AND comment.context_id = datacenter_sensor.id) " : " ").
+			(isset($tables['ftcc']) ? "INNER JOIN fulltext_comment_content ftcc ON (ftcc.id=comment.id) " : " ")
+			;
 		
 		// Custom field joins
 		list($select_sql, $join_sql, $has_multiple_values) = self::_appendSelectJoinSqlForCustomFieldTables(
@@ -467,6 +470,9 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 	const METRIC_DELTA = 'p_metric_delta';
 	const OUTPUT = 'p_output';
 	
+	// Comment Content
+	const FULLTEXT_COMMENT_CONTENT = 'ftcc_content';
+	
 	/**
 	 * @return DevblocksSearchField[]
 	 */
@@ -490,6 +496,11 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 			self::OUTPUT => new DevblocksSearchField(self::OUTPUT, 'datacenter_sensor', 'output', $translate->_('dao.datacenter_sensor.output')),
 		);
 		
+		$tables = DevblocksPlatform::getDatabaseTables();
+		if(isset($tables['fulltext_comment_content'])) {
+			$columns[self::FULLTEXT_COMMENT_CONTENT] = new DevblocksSearchField(self::FULLTEXT_COMMENT_CONTENT, 'ftcc', 'content', $translate->_('comment.filters.content'));
+		}
+		
 		// Custom Fields
 		$fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
 
@@ -500,7 +511,7 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 		}
 		
 		// Sort by label (translation-conscious)
-		uasort($columns, create_function('$a, $b', "return strcasecmp(\$a->db_label,\$b->db_label);\n"));
+		DevblocksPlatform::sortObjects($columns, 'db_label');
 
 		return $columns;		
 	}

@@ -1,8 +1,6 @@
 <form action="{devblocks_url}{/devblocks_url}" method="post" id="frmSensor">
-<input type="hidden" name="c" value="datacenter">
-<input type="hidden" name="a" value="handleTabAction">
-<input type="hidden" name="tab" value="cerberusweb.datacenter.tab.sensors">
-<input type="hidden" name="action" value="savePeek">
+<input type="hidden" name="c" value="datacenter.sensors">
+<input type="hidden" name="a" value="savePeek">
 {if !empty($model) && !empty($model->id)}<input type="hidden" name="id" value="{$model->id}">{/if}
 <input type="hidden" name="do_delete" value="0">
 
@@ -104,7 +102,7 @@
 </fieldset>
 *}
 
-<button type="button" onclick="genericAjaxPopupPostCloseReloadView(null,'frmSensor','{$view_id}', false, 'sensor_save');"><span class="cerb-sprite2 sprite-tick-circle-frame"></span> {$translate->_('common.save_changes')|capitalize}</button>
+<button type="button" onclick="genericAjaxPopupPostCloseReloadView(null,'frmSensor','{$view_id}', false, 'datacenter_sensor_save');"><span class="cerb-sprite2 sprite-tick-circle-frame"></span> {$translate->_('common.save_changes')|capitalize}</button>
 {if $model->id && $active_worker->is_superuser}<button type="button" onclick="if(confirm('Permanently delete this sensor?')) { this.form.do_delete.value='1';genericAjaxPopupPostCloseReloadView(null,'frmSensor','{$view_id}'); } "><span class="cerb-sprite2 sprite-minus-circle-frame"></span> {$translate->_('common.delete')|capitalize}</button>{/if}
 
 </form>

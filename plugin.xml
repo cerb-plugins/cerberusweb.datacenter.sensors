@@ -47,6 +47,10 @@
 			<class name="AbstractEvent_Sensor" />
 		</file>
 		
+		<file path="api/events/sensor_macro.php">
+			<class name="Event_SensorMacro" />
+		</file>
+		
 	</class_loader>
 
 	<!-- Extensions -->
@@ -109,6 +113,21 @@
 				<name>WgmDatacenterSensorsSensorPort</name>
 			</class>
 			<params>
+			</params>
+		</extension>
+
+		<!-- Pages -->
+
+		<extension point="cerberusweb.page">
+			<id>cerberusweb.datacenter.sensors.page</id>
+			<name>Sensors Page</name>
+			<class>
+				<file>api/App.php</file>
+				<name>Page_Sensors</name>
+			</class>
+			<params>
+				<param key="uri" value="datacenter.sensors" />
+				<param key="menutitle" value="" />
 			</params>
 		</extension>
 
