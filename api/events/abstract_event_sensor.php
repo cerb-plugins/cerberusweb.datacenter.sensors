@@ -150,7 +150,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 		$tpl->clearAssign('params');
 	}
 	
-	function runConditionExtension($token, $trigger, $params, $values) {
+	function runConditionExtension($token, $trigger, $params, DevblocksDictionaryDelegate $dict) {
 		$pass = true;
 		
 		switch($token) {
@@ -164,7 +164,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				switch($token) {
 					case 'sensor_link':
 						$from_context = 'cerberusweb.contexts.datacenter.sensor';
-						@$from_context_id = $values['sensor_id'];
+						@$from_context_id = $dict->sensor_id;
 						break;
 					default:
 						$pass = false;
@@ -290,39 +290,39 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 		$tpl->clearAssign('token_labels');		
 	}
 	
-	function simulateActionExtension($token, $trigger, $params, &$values) {
-		@$sensor_id = $values['sensor_id'];
+	function simulateActionExtension($token, $trigger, $params, DevblocksDictionaryDelegate $dict) {
+		@$sensor_id = $dict->sensor_id;
 
 		if(empty($sensor_id))
 			return;
 		
 		switch($token) {
 			case 'add_watchers':
-				return DevblocksEventHelper::simulateActionAddWatchers($params, $values, 'sensor_id');
+				return DevblocksEventHelper::simulateActionAddWatchers($params, $dict, 'sensor_id');
 				break;
 			
 			case 'create_comment':
-				return DevblocksEventHelper::simulateActionCreateComment($params, $values, 'sensor_id');
+				return DevblocksEventHelper::simulateActionCreateComment($params, $dict, 'sensor_id');
 				break;
 				
 			case 'create_notification':
-				return DevblocksEventHelper::simulateActionCreateNotification($params, $values, 'sensor_id');
+				return DevblocksEventHelper::simulateActionCreateNotification($params, $dict, 'sensor_id');
 				break;
 				
 			case 'create_task':
-				return DevblocksEventHelper::simulateActionCreateTask($params, $values, 'sensor_id');
+				return DevblocksEventHelper::simulateActionCreateTask($params, $dict, 'sensor_id');
 				break;
 
 			case 'create_ticket':
-				return DevblocksEventHelper::simulateActionCreateTicket($params, $values, 'sensor_id');
+				return DevblocksEventHelper::simulateActionCreateTicket($params, $dict, 'sensor_id');
 				break;
 				
 			case 'schedule_behavior':
-				return DevblocksEventHelper::simulateActionScheduleBehavior($params, $values, 'sensor_id');
+				return DevblocksEventHelper::simulateActionScheduleBehavior($params, $dict, 'sensor_id');
 				break;
 				
 			case 'unschedule_behavior':
-				return DevblocksEventHelper::simulateActionUnscheduleBehavior($params, $values, 'sensor_id');
+				return DevblocksEventHelper::simulateActionUnscheduleBehavior($params, $dict, 'sensor_id');
 				break;
 				
 			case 'set_sensor_links':
@@ -344,45 +344,45 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 					}
 					
 					if(!empty($context) && !empty($context_id))
-						return DevblocksEventHelper::simulateActionSetCustomField($custom_field, 'sensor_custom', $params, $values, $context, $context_id);
+						return DevblocksEventHelper::simulateActionSetCustomField($custom_field, 'sensor_custom', $params, $dict, $context, $context_id);
 				}
 				break;	
 		}
 	}
 	
-	function runActionExtension($token, $trigger, $params, &$values) {
-		@$sensor_id = $values['sensor_id'];
+	function runActionExtension($token, $trigger, $params, DevblocksDictionaryDelegate $dict) {
+		@$sensor_id = $dict->sensor_id;
 
 		if(empty($sensor_id))
 			return;
 		
 		switch($token) {
 			case 'add_watchers':
-				DevblocksEventHelper::runActionAddWatchers($params, $values, 'sensor_id');
+				DevblocksEventHelper::runActionAddWatchers($params, $dict, 'sensor_id');
 				break;
 			
 			case 'create_comment':
-				DevblocksEventHelper::runActionCreateComment($params, $values, 'sensor_id');
+				DevblocksEventHelper::runActionCreateComment($params, $dict, 'sensor_id');
 				break;
 				
 			case 'create_notification':
-				DevblocksEventHelper::runActionCreateNotification($params, $values, 'sensor_id');
+				DevblocksEventHelper::runActionCreateNotification($params, $dict, 'sensor_id');
 				break;
 				
 			case 'create_task':
-				DevblocksEventHelper::runActionCreateTask($params, $values, 'sensor_id');
+				DevblocksEventHelper::runActionCreateTask($params, $dict, 'sensor_id');
 				break;
 
 			case 'create_ticket':
-				DevblocksEventHelper::runActionCreateTicket($params, $values, 'sensor_id');
+				DevblocksEventHelper::runActionCreateTicket($params, $dict, 'sensor_id');
 				break;
 				
 			case 'schedule_behavior':
-				DevblocksEventHelper::runActionScheduleBehavior($params, $values, 'sensor_id');
+				DevblocksEventHelper::runActionScheduleBehavior($params, $dict, 'sensor_id');
 				break;
 				
 			case 'unschedule_behavior':
-				DevblocksEventHelper::runActionUnscheduleBehavior($params, $values, 'sensor_id');
+				DevblocksEventHelper::runActionUnscheduleBehavior($params, $dict, 'sensor_id');
 				break;
 				
 			case 'set_sensor_links':
@@ -397,7 +397,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				switch($token) {
 					case 'set_sensor_links':
 						$from_context = 'cerberusweb.contexts.datacenter.sensor';
-						@$from_context_id = $values['sensor_id'];
+						@$from_context_id = $dict->sensor_id;
 						break;
 				}
 				
@@ -430,7 +430,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 					}
 					
 					if(!empty($context) && !empty($context_id))
-						DevblocksEventHelper::runActionSetCustomField($custom_field, 'sensor_custom', $params, $values, $context, $context_id);
+						DevblocksEventHelper::runActionSetCustomField($custom_field, 'sensor_custom', $params, $dict, $context, $context_id);
 				}
 				break;	
 		}

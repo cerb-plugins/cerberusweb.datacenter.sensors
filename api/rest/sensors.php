@@ -107,8 +107,6 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 		$values = array();
 		$context = CerberusContexts::getContext('cerberusweb.contexts.datacenter.sensor', $id, $labels, $values, null, true);
 
-//		unset($values['initial_message_content']);
-
 		return $values;
 	}
 	

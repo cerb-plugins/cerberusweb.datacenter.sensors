@@ -601,6 +601,10 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		return $objects;
 	}
 	
+	function getDataAsObjects($ids=null) {
+		return $this->_getDataAsObjects('DAO_DatacenterSensor', $ids);
+	}
+	
 	function getDataSample($size) {
 		return $this->_doGetDataSample('DAO_DatacenterSensor', $size);
 	}
@@ -998,7 +1002,12 @@ class Context_Sensor extends Extension_DevblocksContext {
 		// Token values
 		$token_values = array();
 		
+		$token_values['_context'] = 'cerberusweb.contexts.datacenter.sensor';
+		
 		if($object) {
+			$token_values['_loaded'] = true;
+			$token_values['_label'] = $object->name;
+			
 			$status_options = array(
 				'O' => 'OK',
 				'W' => 'Warning',
@@ -1018,54 +1027,45 @@ class Context_Sensor extends Extension_DevblocksContext {
 			// URL
 			$url_writer = DevblocksPlatform::getUrlService();
 			//$token_values['record_url'] = $url_writer->writeNoProxy(sprintf("c=example.object&id=%d-%s",$object->id, DevblocksPlatform::strToPermalink($object->name)), true);
-			
-			$token_values['custom'] = array();
-			
-			$field_values = array_shift(DAO_CustomFieldValue::getValuesByContextIds('cerberusweb.contexts.datacenter.sensor', $object->id));
-			if(is_array($field_values) && !empty($field_values)) {
-				foreach($field_values as $cf_id => $cf_val) {
-					if(!isset($fields[$cf_id]))
-						continue;
-					
-					// The literal value
-					if(null != $object)
-						$token_values['custom'][$cf_id] = $cf_val;
-					
-					// Stringify
-					if(is_array($cf_val))
-						$cf_val = implode(', ', $cf_val);
-						
-					if(is_string($cf_val)) {
-						if(null != $object)
-							$token_values['custom_'.$cf_id] = $cf_val;
-					}
-				}
-			}
-			
-			// Watchers
-			$watchers = CerberusContexts::getWatchers('cerberusweb.contexts.datacenter.sensor', $object->id, true);
-			$token_values['watchers'] = $watchers;
 		}
 
-		// Example link
-		// [TODO] Use the following code if you want to link to another context
-//		@$assignee_id = $object->worker_id;
-//		$merge_token_labels = array();
-//		$merge_token_values = array();
-//		CerberusContexts::getContext(CerberusContexts::CONTEXT_WORKER, $assignee_id, $merge_token_labels, $merge_token_values, '', true);
-//
-//		CerberusContexts::merge(
-//			'assignee_',
-//			'Assignee:',
-//			$merge_token_labels,
-//			$merge_token_values,
-//			$token_labels,
-//			$token_values
-//		);			
-		
 		return true;
 	}
 
+	function lazyLoadContextValues($token, $dictionary) {
+		if(!isset($dictionary['id']))
+			return;
+		
+		$context = Extension_Sensor::ID;
+		$context_id = $dictionary['id'];
+		
+		@$is_loaded = $dictionary['_loaded'];
+		$values = array();
+		
+		if(!$is_loaded) {
+			$labels = array();
+			CerberusContexts::getContext($context, $context_id, $labels, $values);
+		}
+		
+		switch($token) {
+			case 'watchers':
+				$watchers = array(
+					$token => CerberusContexts::getWatchers($context, $context_id, true),
+				);
+				$values = array_merge($values, $watchers);
+				break;
+				
+			default:
+				if(substr($token,0,7) == 'custom_') {
+					$fields = $this->_lazyLoadCustomFields($context, $context_id);
+					$values = array_merge($values, $fields);
+				}
+				break;
+		}
+		
+		return $values;
+	}	
+	
 	function getChooserView() {
 		$active_worker = CerberusApplication::getActiveWorker();
 		
