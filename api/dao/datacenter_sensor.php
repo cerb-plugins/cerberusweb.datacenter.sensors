@@ -698,7 +698,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 			default:
 				// Custom fields
 				if('cf_' == substr($column,0,3)) {
-					$counts = $this->_getSubtotalCountForCustomColumn('DAO_DatacenterSensor', $column, 'p.id');
+					$counts = $this->_getSubtotalCountForCustomColumn('DAO_DatacenterSensor', $column, 'datacenter_sensor.id');
 				}
 				
 				break;
