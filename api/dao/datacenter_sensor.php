@@ -665,13 +665,16 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				break;
 				
 			case SearchFields_DatacenterSensor::SERVER_ID:
-				$label_map = array();
+				$label_map = array(
+					'0' => '(blank)',				
+				);
+				
 				$servers = DAO_Server::getAll();
 				if(is_array($servers))
 				foreach($servers as $server)
 					$label_map[$server->id] = $server->name;
 				
-				$counts = $this->_getSubtotalCountForStringColumn('DAO_DatacenterSensor', $column, $label_map);
+				$counts = $this->_getSubtotalCountForStringColumn('DAO_DatacenterSensor', $column, $label_map, 'in', 'options[]');
 				break;
 				
 			case SearchFields_DatacenterSensor::STATUS:
@@ -815,8 +818,11 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				$output = array();
 				
 				foreach($values as $v) {
+					if(empty($v))
+						$output['0'] = '(blank)';
+					
 					if(isset($servers[$v]))
-						$output[] = $servers[$v]->name;;
+						$output[] = $servers[$v]->name;
 				}
 				
 				echo implode(' or ', $output);
