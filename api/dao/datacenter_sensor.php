@@ -380,10 +380,10 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 		$param_key = $param->field;
 		settype($param_key, 'string');
 		switch($param_key) {
-// 			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
-// 				$args['has_multiple_values'] = true;
-// 				self::_searchComponentsVirtualWatchers($param, $from_context, $from_index, $args['join_sql'], $args['where_sql']);
-// 				break;
+			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
+				$args['has_multiple_values'] = true;
+				self::_searchComponentsVirtualWatchers($param, $from_context, $from_index, $args['join_sql'], $args['where_sql']);
+				break;
 		}
 		
 	}
@@ -473,6 +473,9 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 	// Comment Content
 	const FULLTEXT_COMMENT_CONTENT = 'ftcc_content';
 	
+	// Virtuals
+	const VIRTUAL_WATCHERS = '*_workers';
+	
 	/**
 	 * @return DevblocksSearchField[]
 	 */
@@ -494,6 +497,8 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 			self::METRIC_TYPE => new DevblocksSearchField(self::METRIC_TYPE, 'datacenter_sensor', 'metric_type', $translate->_('dao.datacenter_sensor.metric_type')),
 			self::METRIC_DELTA => new DevblocksSearchField(self::METRIC_DELTA, 'datacenter_sensor', 'metric_delta', $translate->_('dao.datacenter_sensor.metric_delta')),
 			self::OUTPUT => new DevblocksSearchField(self::OUTPUT, 'datacenter_sensor', 'output', $translate->_('dao.datacenter_sensor.output')),
+			
+			self::VIRTUAL_WATCHERS => new DevblocksSearchField(self::VIRTUAL_WATCHERS, '*', '*_workers', $translate->_('common.watchers')),
 		);
 		
 		$tables = DevblocksPlatform::getDatabaseTables();
@@ -627,9 +632,9 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 					$pass = true;
 					break;
 					
-// 				case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
-// 					$pass = true;
-// 					break;
+				case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
+					$pass = true;
+					break;
 					
 				// Valid custom fields
 				default:
@@ -691,9 +696,9 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				$counts = $this->_getSubtotalCountForBooleanColumn('DAO_DatacenterSensor', $column);
 				break;
 			
-// 			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
-// 				$counts = $this->_getSubtotalCountForWatcherColumn('DAO_DatacenterSensor', $column);
-// 				break;
+			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
+				$counts = $this->_getSubtotalCountForWatcherColumn('DAO_DatacenterSensor', $column);
+				break;
 				
 			default:
 				// Custom fields
@@ -730,6 +735,16 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		$tpl->display('devblocks:cerberusweb.core::internal/views/subtotals_and_view.tpl');
 	}
 
+	function renderVirtualCriteria($param) {
+		$key = $param->field;
+		
+		switch($key) {
+			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
+				$this->_renderVirtualWatchers($param);
+				break;
+		}
+	}
+	
 	function renderCriteria($field) {
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->assign('id', $this->id);
@@ -780,6 +795,10 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__list.tpl');
 				break;
 				
+			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
+				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__context_worker.tpl');
+				break;
+				
 			default:
 				// Custom Fields
 				if('cf_' == substr($field,0,3)) {
@@ -828,6 +847,10 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				echo implode(' or ', $output);
 				break;
 				
+			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
+				$this->_renderCriteriaParamWorker($param);
+				break;
+				
 			default:
 				parent::renderCriteriaParam($param);
 				break;
@@ -870,6 +893,11 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 			case SearchFields_DatacenterSensor::STATUS:
 				@$options = DevblocksPlatform::importGPC($_REQUEST['options'],'array',array());
 				$criteria = new DevblocksSearchCriteria($field,$oper,$options);
+				break;
+				
+			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
+				@$worker_ids = DevblocksPlatform::importGPC($_REQUEST['worker_id'],'array',array());
+				$criteria = new DevblocksSearchCriteria($field,$oper,$worker_ids);
 				break;
 				
 			default:
