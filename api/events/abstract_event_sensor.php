@@ -98,7 +98,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 			),
 			'sensor_server_id' => array(
 				'label' => 'Server',
-				'context' => 'cerberusweb.contexts.datacenter.server',
+				'context' => CerberusContexts::CONTEXT_SERVER,
 			),
 			'sensor_server_watchers' => array(
 				'label' => 'Server watchers',
@@ -108,13 +108,19 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 		
 		$vars = parent::getValuesContexts($trigger);
 		
-		return array_merge($vals, $vars);
+		$vals_to_ctx = array_merge($vals, $vars);
+		asort($vals_to_ctx);
+		
+		return $vals_to_ctx;
 	}
 	
 	function getConditionExtensions() {
 		$labels = $this->getLabels();
 		
 		$labels['sensor_link'] = 'Sensor is linked';
+		
+		$labels['sensor_server_watcher_count'] = 'Sensor server watcher count';
+		$labels['sensor_watcher_count'] = 'Sensor watcher count';
 		
 		$types = array(
 			'sensor_metric' => Model_CustomField::TYPE_SINGLE_LINE,
@@ -123,7 +129,11 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 			'sensor_tag' => Model_CustomField::TYPE_SINGLE_LINE,
 			'sensor_updated|date' => Model_CustomField::TYPE_DATE,
 			'sensor_status' => null,
+			
 			'sensor_link' => null,
+			
+			'sensor_server_watcher_count' => null,
+			'sensor_watcher_count' => null,
 		);
 
 		$conditions = $this->_importLabelsTypesAsConditions($labels, $types);
@@ -143,6 +153,11 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				$contexts = Extension_DevblocksContext::getAll(false);
 				$tpl->assign('contexts', $contexts);
 				$tpl->display('devblocks:cerberusweb.core::events/condition_link.tpl');
+				break;
+				
+			case 'sensor_server_watcher_count':
+			case 'sensor_watcher_count':
+				$tpl->display('devblocks:cerberusweb.core::internal/decisions/conditions/_number.tpl');
 				break;
 		}
 
@@ -196,7 +211,37 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 					$pass = false;
 				}
 				break;
-							
+
+			case 'sensor_server_watcher_count':
+			case 'sensor_watcher_count':
+				$not = (substr($params['oper'],0,1) == '!');
+				$oper = ltrim($params['oper'],'!');
+				
+				switch($token) {
+					case 'sensor_server_watcher_count':
+						$value = count($dict->sensor_server_watchers);
+						break;
+					case 'sensor_watcher_count':
+					default:
+						$value = count($dict->sensor_watchers);
+						break;
+				}
+				
+				switch($oper) {
+					case 'is':
+						$pass = intval($value)==intval($params['value']);
+						break;
+					case 'gt':
+						$pass = intval($value) > intval($params['value']);
+						break;
+					case 'lt':
+						$pass = intval($value) < intval($params['value']);
+						break;
+				}
+				
+				$pass = ($not) ? !$pass : $pass;
+				break;
+				
 			default:
 				$pass = false;
 				break;
