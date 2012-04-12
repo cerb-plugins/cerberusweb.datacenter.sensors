@@ -1061,7 +1061,25 @@ class Context_Sensor extends Extension_DevblocksContext {
 			// URL
 			$url_writer = DevblocksPlatform::getUrlService();
 			//$token_values['record_url'] = $url_writer->writeNoProxy(sprintf("c=example.object&id=%d-%s",$object->id, DevblocksPlatform::strToPermalink($object->name)), true);
+			
+			// Server
+			$server_id = (null != $object && !empty($object->server_id)) ? $object->server_id : null;
+			$token_values['server_id'] = $server_id;
 		}
+		
+		// Server
+		$merge_token_labels = array();
+		$merge_token_values = array();
+		CerberusContexts::getContext(CerberusContexts::CONTEXT_SERVER, null, $merge_token_labels, $merge_token_values, null, true);
+
+		CerberusContexts::merge(
+			'server_',
+			'',
+			$merge_token_labels,
+			$merge_token_values,
+			$token_labels,
+			$token_values
+		);		
 
 		return true;
 	}
@@ -1070,7 +1088,7 @@ class Context_Sensor extends Extension_DevblocksContext {
 		if(!isset($dictionary['id']))
 			return;
 		
-		$context = Extension_Sensor::ID;
+		$context = Context_Sensor::ID;
 		$context_id = $dictionary['id'];
 		
 		@$is_loaded = $dictionary['_loaded'];
