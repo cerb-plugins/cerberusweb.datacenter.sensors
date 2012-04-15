@@ -330,6 +330,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 			);
 			
 		$join_sql = "FROM datacenter_sensor ".
+			(isset($tables['context_link']) ? "INNER JOIN context_link ON (context_link.to_context = 'cerberusweb.contexts.datacenter.sensor' AND context_link.to_context_id = datacenter_sensor.id) " : " ").
 			(isset($tables['ftcc']) ? "INNER JOIN comment ON (comment.context = 'cerberusweb.contexts.datacenter.sensor' AND comment.context_id = datacenter_sensor.id) " : " ").
 			(isset($tables['ftcc']) ? "INNER JOIN fulltext_comment_content ftcc ON (ftcc.id=comment.id) " : " ")
 			;
@@ -472,6 +473,10 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 	
 	// Comment Content
 	const FULLTEXT_COMMENT_CONTENT = 'ftcc_content';
+
+	// Context links
+	const CONTEXT_LINK = 'cl_context_from';
+	const CONTEXT_LINK_ID = 'cl_context_from_id';
 	
 	// Virtuals
 	const VIRTUAL_WATCHERS = '*_workers';
@@ -497,6 +502,9 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 			self::METRIC_TYPE => new DevblocksSearchField(self::METRIC_TYPE, 'datacenter_sensor', 'metric_type', $translate->_('dao.datacenter_sensor.metric_type')),
 			self::METRIC_DELTA => new DevblocksSearchField(self::METRIC_DELTA, 'datacenter_sensor', 'metric_delta', $translate->_('dao.datacenter_sensor.metric_delta')),
 			self::OUTPUT => new DevblocksSearchField(self::OUTPUT, 'datacenter_sensor', 'output', $translate->_('dao.datacenter_sensor.output')),
+			
+			self::CONTEXT_LINK => new DevblocksSearchField(self::CONTEXT_LINK, 'context_link', 'from_context', null),
+			self::CONTEXT_LINK_ID => new DevblocksSearchField(self::CONTEXT_LINK_ID, 'context_link', 'from_context_id', null),
 			
 			self::VIRTUAL_WATCHERS => new DevblocksSearchField(self::VIRTUAL_WATCHERS, '*', '*_workers', $translate->_('common.watchers')),
 		);
@@ -581,11 +589,15 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		);
 		
 		$this->addColumnsHidden(array(
+			SearchFields_DatacenterSensor::CONTEXT_LINK,
+			SearchFields_DatacenterSensor::CONTEXT_LINK_ID,
 			SearchFields_DatacenterSensor::ID,
 			SearchFields_DatacenterSensor::PARAMS_JSON,
 		));
 		
 		$this->addParamsHidden(array(
+			SearchFields_DatacenterSensor::CONTEXT_LINK,
+			SearchFields_DatacenterSensor::CONTEXT_LINK_ID,
 			SearchFields_DatacenterSensor::ID,
 			SearchFields_DatacenterSensor::PARAMS_JSON,
 		));
