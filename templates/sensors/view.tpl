@@ -70,7 +70,7 @@
 			{elseif $column=="p_name"}
 				<td>
 					<a href="{devblocks_url}c=datacenter.sensors&a=sensor&id={$result.p_id}{/devblocks_url}-{$result.p_name|devblocks_permalink}" class="subject">{$result.p_name}</a>
-					<button type="button" class="peek" style="visibility:hidden;padding:1px;margin:0px 5px;" onclick="genericAjaxPopup('peek','c=datacenter.sensors&a=showPeek&view_id={$view->id}&id={$result.p_id}', null, false, '500');"><span class="cerb-sprite2 sprite-document-search-result" style="margin-left:2px" title="{$translate->_('views.peek')}"></span></button>
+					<button type="button" class="peek" style="visibility:hidden;padding:1px;margin:0px 5px;" onclick="genericAjaxPopup('peek','c=internal&a=showPeekPopup&context=cerberusweb.contexts.datacenter.sensor&context_id={$result.p_id}&view_id={$view->id}',null,false,'500');"><span class="cerb-sprite2 sprite-document-search-result" style="margin-left:2px" title="{$translate->_('views.peek')}"></span></button>
 				</td>
 			{elseif $column=="p_server_id"}
 				<td>
@@ -119,6 +119,14 @@
 						{$result.$column}{if $result.p_metric_type=='percent'}%{/if}
 					{elseif $result.$column > 0}
 						+{$result.$column}{if $result.p_metric_type=='percent'}%{/if}
+					{/if}
+				</td>
+			{elseif $column == "p_is_disabled"}
+				<td>
+					{if $result.$column}
+						{'common.no'|devblocks_translate|capitalize}
+					{else}
+						{'common.yes'|devblocks_translate|capitalize}
 					{/if}
 				</td>
 			{else}

@@ -71,7 +71,7 @@
 				<param key="view_class" value="View_DatacenterSensor" />
 				<param key="options">
 					<value>
-						<!--<data key="create" />-->
+						<data key="create" />
 						<data key="find" />
 						<!--<data key="snippets" />-->
 						<data key="va_variable" />
@@ -131,21 +131,6 @@
 			</params>
 		</extension>
 
-		<!-- Datacenter Tab -->
-
-		<extension point="cerberusweb.datacenter.tab">
-			<id>cerberusweb.datacenter.tab.sensors</id>
-			<name>Sensors Tab</name>
-			<class>
-				<file>api/App.php</file>
-				<name>WgmDatacenterSensorsDatacenterTab</name>
-			</class>
-			<params>
-				<param key="uri" value="sensors" />
-    			<param key="title" value="Sensors" />
-			</params>
-		</extension>
-		
 		<!-- Scheduled Jobs -->
 		
 		<extension point="cerberusweb.cron">

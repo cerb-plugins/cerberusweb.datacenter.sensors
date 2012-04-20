@@ -1,12 +1,10 @@
 {$page_context = 'cerberusweb.contexts.datacenter.sensor'}
 {$page_context_id = $sensor->id}
 
-{include file="devblocks:cerberusweb.datacenter.sensors::datacenter/sensors/display/submenu.tpl"}
-
-<h2>{'datacenter.sensors.common.sensor'|devblocks_translate|capitalize}</h2>
+<h1>{$sensor->name}</h1>
 
 <fieldset class="properties">
-	<legend>{$sensor->name}</legend>
+	<legend>{'datacenter.sensors.common.sensor'|devblocks_translate|capitalize}</legend>
 	
 	<form action="{devblocks_url}{/devblocks_url}" method="post" style="margin-bottom:5px;">
 
@@ -14,7 +12,7 @@
 			<div class="property">
 				{if $k == 'server'}
 					<b>{$v.label|capitalize}:</b>
-					<a href="javascript:;" onclick="genericAjaxPopup('peek','c=datacenter&a=showServerPeek&view_id=&id={$v.server->id}', null, false, '500');">{$v.server->name}</a>
+					<a href="javascript:;" onclick="genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={CerberusContexts::CONTEXT_SERVER}&context_id={$v.server->id}',null,false,'500');">{$v.server->name}</a>
 				{elseif $k == 'status'}
 					<b>{'common.status'|devblocks_translate|capitalize}:</b>
 					<div class="badge badge-lightgray">
@@ -105,7 +103,7 @@
 		var tabs = $("#datacenterSensorTabs").tabs( { selected:{$selected_tab_idx} } );
 		
 		$('#btnDatacenterSensorEdit').bind('click', function() {
-			$popup = genericAjaxPopup('peek','c=datacenter.sensors&a=showPeek&id={$page_context_id}',null,false,'550');
+			$popup = genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={$page_context}&context_id={$page_context_id}',null,false,'550');
 			$popup.one('datacenter_sensor_save', function(event) {
 				event.stopPropagation();
 				document.location.href = '{devblocks_url}c=datacenter.sensors&a=sensor&id={$page_context_id}{/devblocks_url}-{$sensor->name|devblocks_permalink}';

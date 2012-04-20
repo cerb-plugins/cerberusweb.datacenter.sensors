@@ -161,41 +161,6 @@ class Cron_WgmDatacenterSensors extends CerberusCronPageExtension {
 };
 endif;
 
-if (class_exists('Extension_DatacenterTab')):
-class WgmDatacenterSensorsDatacenterTab extends Extension_DatacenterTab {
-	function showTab() {
-		$tpl = DevblocksPlatform::getTemplateService();
-		
-		// View
-		$defaults = new C4_AbstractViewModel();
-		$defaults->id = 'datacenter_sensors';
-		$defaults->class_name = 'View_DatacenterSensor';
-		$defaults->renderSubtotals = SearchFields_DatacenterSensor::STATUS;
-		
-		if(null != ($view = C4_AbstractViewLoader::getView($defaults->id, $defaults))) {
-			$tpl->assign('view', $view);
-		}
-		
-		$tpl->display('devblocks:cerberusweb.datacenter.sensors::datacenter/sensors/tab.tpl');		
-	}
-	
-	function renderConfigExtensionAction() {
-		@$extension_id = DevblocksPlatform::importGPC($_REQUEST['extension_id'], 'string', ''); 
-		@$sensor_id = DevblocksPlatform::importGPC($_REQUEST['sensor_id'], 'integer', 0); 
-		
-		if(null == ($ext = DevblocksPlatform::getExtension($extension_id, true))) /* @var $ext Extension_DatacenterSensor */
-			return;
-		
-		$params = array();
-		
-		if(null != ($sensor = DAO_DatacenterSensor::get($sensor_id)))
-			$params = $sensor->params;
-		
-		$ext->renderConfig($params);
-	}
-}
-endif;
-
 // Controller
 class Page_Sensors extends CerberusPageExtension {
 	function isVisible() {
@@ -322,83 +287,6 @@ class Page_Sensors extends CerberusPageExtension {
 				break;
 		}
 		
-	}
-	
-	// Post	
-	function doQuickSearchAction() {
-        @$type = DevblocksPlatform::importGPC($_POST['type'],'string'); 
-        @$query = DevblocksPlatform::importGPC($_POST['query'],'string');
-
-        $query = trim($query);
-        
-        $visit = CerberusApplication::getVisit(); /* @var $visit CerberusVisit */
-		$active_worker = CerberusApplication::getActiveWorker();
-		
-		$defaults = new C4_AbstractViewModel();
-		$defaults->id = 'datacenter_sensors';
-		$defaults->class_name = 'View_DatacenterSensor';
-		
-		$view = C4_AbstractViewLoader::getView('datacenter_sensors', $defaults);
-		
-        $visit->set('sensors_quick_search_type', $type);
-        
-        $params = array();
-        
-        switch($type) {
-            case "name":
-		        if($query && false===strpos($query,'*'))
-		            $query = '*' . $query . '*';
-                $params[SearchFields_DatacenterSensor::NAME] = new DevblocksSearchCriteria(SearchFields_DatacenterSensor::NAME,DevblocksSearchCriteria::OPER_LIKE,strtolower($query));               
-                break;
-
-            case "comments_all":
-            	$params[SearchFields_DatacenterSensor::FULLTEXT_COMMENT_CONTENT] = new DevblocksSearchCriteria(SearchFields_DatacenterSensor::FULLTEXT_COMMENT_CONTENT,DevblocksSearchCriteria::OPER_FULLTEXT,array($query,'all'));               
-                break;
-                
-            case "comments_phrase":
-            	$params[SearchFields_DatacenterSensor::FULLTEXT_COMMENT_CONTENT] = new DevblocksSearchCriteria(SearchFields_DatacenterSensor::FULLTEXT_COMMENT_CONTENT,DevblocksSearchCriteria::OPER_FULLTEXT,array($query,'phrase'));               
-                break;
-        }
-        
-        $view->addParams($params, true);
-        $view->renderPage = 0;
-        
-        C4_AbstractViewLoader::setView($view->id, $view);
-        
-        DevblocksPlatform::redirect(new DevblocksHttpResponse(array('datacenter','sensors')));
-	}	
-	
-	function showPeekAction() {
-		@$id = DevblocksPlatform::importGPC($_REQUEST['id'],'integer',0);
-		@$view_id = DevblocksPlatform::importGPC($_REQUEST['view_id'],'string','');
-		
-		$tpl = DevblocksPlatform::getTemplateService();
-		$tpl->assign('view_id', $view_id);
-		
-		if(null != ($model = DAO_DatacenterSensor::get($id))) {
-			$tpl->assign('model', $model);
-		}
-		
-		// Custom fields
-		
-		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor'); 
-		$tpl->assign('custom_fields', $custom_fields);
-
-		if(!empty($model)) {
-			$custom_field_values = DAO_CustomFieldValue::getValuesByContextIds('cerberusweb.contexts.datacenter.sensor', $model->id);
-			if(isset($custom_field_values[$id]))
-				$tpl->assign('custom_field_values', $custom_field_values[$id]);
-		}
-		
-		// Sensor extensions
-		$sensor_manifests = Extension_Sensor::getAll(false);
-		$tpl->assign('sensor_manifests', $sensor_manifests);
-		
-		// Servers
-		$servers = DAO_Server::getAll();
-		$tpl->assign('servers', $servers);
-		
-		$tpl->display('devblocks:cerberusweb.datacenter.sensors::sensors/peek.tpl');
 	}
 	
 	function savePeekAction() {
