@@ -4,7 +4,7 @@
 {if !empty($model) && !empty($model->id)}<input type="hidden" name="id" value="{$model->id}">{/if}
 <input type="hidden" name="do_delete" value="0">
 
-<fieldset>
+<fieldset class="peek">
 	<legend>{'common.properties'|devblocks_translate}</legend>
 	
 	<table cellspacing="0" cellpadding="2" border="0" width="98%">
@@ -79,7 +79,7 @@
 </fieldset>
 
 {if !empty($custom_fields)}
-<fieldset>
+<fieldset class="peek">
 	<legend>{'common.custom_fields'|devblocks_translate}</legend>
 	{include file="devblocks:cerberusweb.core::internal/custom_fields/bulk/form.tpl" bulk=false}
 </fieldset>
@@ -89,18 +89,6 @@
 {if !empty($last_comment)}
 	{include file="devblocks:cerberusweb.core::internal/comments/comment.tpl" readonly=true comment=$last_comment}
 {/if}
-
-{*
-<fieldset>
-	<legend>{'common.comment'|devblocks_translate|capitalize}</legend>
-	<textarea name="comment" rows="5" cols="45" style="width:98%;"></textarea>
-	<div class="notify" style="display:none;">
-		<b>{'common.notify_watchers_and'|devblocks_translate}:</b>
-		<button type="button" class="chooser_notify_worker"><span class="cerb-sprite sprite-view"></span></button>
-		<ul class="chooser-container bubbles" style="display:block;"></ul>
-	</div>
-</fieldset>
-*}
 
 <button type="button" onclick="genericAjaxPopupPostCloseReloadView(null,'frmSensor','{$view_id}', false, 'datacenter_sensor_save');"><span class="cerb-sprite2 sprite-tick-circle-frame"></span> {$translate->_('common.save_changes')|capitalize}</button>
 {if $model->id && $active_worker->is_superuser}<button type="button" onclick="if(confirm('Permanently delete this sensor?')) { this.form.do_delete.value='1';genericAjaxPopupPostCloseReloadView(null,'frmSensor','{$view_id}'); } "><span class="cerb-sprite2 sprite-minus-circle-frame"></span> {$translate->_('common.delete')|capitalize}</button>{/if}

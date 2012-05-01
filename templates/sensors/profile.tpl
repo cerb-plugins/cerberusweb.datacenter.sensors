@@ -1,7 +1,16 @@
 {$page_context = 'cerberusweb.contexts.datacenter.sensor'}
 {$page_context_id = $sensor->id}
 
-<h1>{$sensor->name}</h1>
+<div style="float:left;">
+	<h1>{$sensor->name}</h1>
+</div>
+
+<div style="float:right;">
+	{$ctx = Extension_DevblocksContext::get($page_context)}
+	{include file="devblocks:cerberusweb.core::search/quick_search.tpl" view=$ctx->getSearchView() return_url="{devblocks_url}c=search&context={$ctx->manifest->params.alias}{/devblocks_url}" reset=true}
+</div>
+
+<div style="clear:both;"></div>
 
 <fieldset class="properties">
 	<legend>{'datacenter.sensors.common.sensor'|devblocks_translate|capitalize}</legend>
@@ -54,7 +63,7 @@
 			</span>		
 
 			<!-- Macros -->
-			{devblocks_url assign=return_url full=true}c=datacenter.sensors&tab=sensor&id={$page_context_id}{/devblocks_url}
+			{devblocks_url assign=return_url full=true}c=profiles&type=sensor&id={$page_context_id}{/devblocks_url}
 			{include file="devblocks:cerberusweb.core::internal/macros/display/button.tpl" context=$page_context context_id=$page_context_id macros=$macros return_url=$return_url}		
 		
 			<!-- Edit -->
@@ -83,12 +92,11 @@
 
 <div id="datacenterSensorTabs">
 	<ul>
-		{$point = 'cerberusweb.datacenter.sensor.tab'}
-		{$tabs = [activity, comments, links]}
+		{$tabs = [activity,comments,links]}
 		
 		<li><a href="{devblocks_url}ajax.php?c=internal&a=showTabActivityLog&scope=target&point={$point}&context={$page_context}&context_id={$page_context_id}{/devblocks_url}">{'common.activity_log'|devblocks_translate|capitalize}</a></li>		
-		<li><a href="{devblocks_url}ajax.php?c=internal&a=showTabContextComments&context={$page_context}&id={$page_context_id}&point={$point}{/devblocks_url}">{'common.comments'|devblocks_translate|capitalize}</a></li>
-		<li><a href="{devblocks_url}ajax.php?c=internal&a=showTabContextLinks&context={$page_context}&id={$page_context_id}&point={$point}{/devblocks_url}">{'common.links'|devblocks_translate}</a></li>
+		<li><a href="{devblocks_url}ajax.php?c=internal&a=showTabContextComments&point={$point}&context={$page_context}&id={$page_context_id}&point={$point}{/devblocks_url}">{'common.comments'|devblocks_translate|capitalize}</a></li>
+		<li><a href="{devblocks_url}ajax.php?c=internal&a=showTabContextLinks&point={$point}&context={$page_context}&id={$page_context_id}&point={$point}{/devblocks_url}">{'common.links'|devblocks_translate}</a></li>
 	</ul>
 </div> 
 <br>
@@ -106,7 +114,7 @@
 			$popup = genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={$page_context}&context_id={$page_context_id}',null,false,'550');
 			$popup.one('datacenter_sensor_save', function(event) {
 				event.stopPropagation();
-				document.location.href = '{devblocks_url}c=datacenter.sensors&a=sensor&id={$page_context_id}{/devblocks_url}-{$sensor->name|devblocks_permalink}';
+				document.location.href = '{devblocks_url}c=profiles&type=sensor&id={$page_context_id}{/devblocks_url}-{$sensor->name|devblocks_permalink}';
 			});
 		});
 		

@@ -156,8 +156,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 						'status_to' => sprintf("%s", $statuses[$status['to']]),
 						),
 					'urls' => array(
-						//'target' => 'c=datacenter&d=display&id='.$model[DAO_Task::ID],
-						'sensor' => 'c=datacenter&d=sensors',
+						'sensor' => sprintf("ctx://%s:%d/%s", 'cerberusweb.contexts.datacenter.sensor', $object_id, $model[DAO_DatacenterSensor::NAME]),
 						)
 				);
 				CerberusContexts::logActivity('datacenter.sensor.status', 'cerberusweb.contexts.datacenter.sensor', $object_id, $entry);
@@ -997,23 +996,35 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 	}			
 };
 
-class Context_Sensor extends Extension_DevblocksContext implements IDevblocksContextPeek {
+class Context_Sensor extends Extension_DevblocksContext implements IDevblocksContextProfile, IDevblocksContextPeek {
 	const ID = 'cerberusweb.contexts.datacenter.sensor';
 	
 	function getRandom() {
 		return DAO_DatacenterSensor::random();
 	}
 	
+	function profileGetUrl($context_id) {
+		if(empty($context_id))
+			return '';
+	
+		$url_writer = DevblocksPlatform::getUrlService();
+		$url = $url_writer->writeNoProxy('c=profiles&type=sensor&id='.$context_id, true);
+		return $url;
+	}
+	
 	function getMeta($context_id) {
 		$model = DAO_DatacenterSensor::get($context_id);
-		$url_writer = DevblocksPlatform::getUrlService();
 		
+		$url = $this->profileGetUrl($context_id);
 		$friendly = DevblocksPlatform::strToPermalink($model->name);
+		
+		if(!empty($friendly))
+			$url .= '-' . $friendly;
 		
 		return array(
 			'id' => $model->id,
 			'name' => $model->name,
-			'permalink' => $url_writer->writeNoProxy(sprintf("c=datacenter&tab=sensors&action=profile&id=%d",$context_id), true),
+			'permalink' => $url,
 		);
 	}
 	
@@ -1022,7 +1033,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			$prefix = 'Sensor:';
 		
 		$translate = DevblocksPlatform::getTranslationService();
-		$fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
+		$fields = DAO_CustomField::getByContext(self::ID);
 
 		// Polymorph
 		if(is_numeric($object)) {
@@ -1055,7 +1066,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		// Token values
 		$token_values = array();
 		
-		$token_values['_context'] = 'cerberusweb.contexts.datacenter.sensor';
+		$token_values['_context'] = self::ID;
 		
 		if($object) {
 			$token_values['_loaded'] = true;
@@ -1137,11 +1148,13 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		return $values;
 	}	
 	
-	function getChooserView() {
+	function getChooserView($view_id=null) {
 		$active_worker = CerberusApplication::getActiveWorker();
+
+		if(empty($view_id))
+			$view_id = 'chooser_'.str_replace('.','_',$this->id).time().mt_rand(0,9999);
 		
 		// View
-		$view_id = 'chooser_'.str_replace('.','_',$this->id).time().mt_rand(0,9999);
 		$defaults = new C4_AbstractViewModel();
 		$defaults->id = $view_id;
 		$defaults->is_ephemeral = true;
