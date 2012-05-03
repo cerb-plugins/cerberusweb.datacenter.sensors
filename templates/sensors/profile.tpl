@@ -15,61 +15,57 @@
 <fieldset class="properties">
 	<legend>{'datacenter.sensors.common.sensor'|devblocks_translate|capitalize}</legend>
 	
-	<form action="{devblocks_url}{/devblocks_url}" method="post" style="margin-bottom:5px;">
-
-		{foreach from=$properties item=v key=k name=props}
-			<div class="property">
-				{if $k == 'server'}
-					<b>{$v.label|capitalize}:</b>
-					<a href="javascript:;" onclick="genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={CerberusContexts::CONTEXT_SERVER}&context_id={$v.server->id}',null,false,'500');">{$v.server->name}</a>
-				{elseif $k == 'status'}
-					<b>{'common.status'|devblocks_translate|capitalize}:</b>
-					<div class="badge badge-lightgray">
-					{if $sensor->status == "W"}
-						<span style="color:rgb(204,154,0);font-weight:bold;">Warning</span>
-					{elseif $sensor->status == "C"}
-						<span style="color:rgb(200,0,0);font-weight:bold;">Critical</span>
-					{else}
-						<span style="color:rgb(0,180,0);font-weight:bold;">OK</span>
-					{/if}
-					</div>
-				{else}
-					{include file="devblocks:cerberusweb.core::internal/custom_fields/profile_cell_renderer.tpl"}
-				{/if}
-			</div>
-			{if $smarty.foreach.props.iteration % 3 == 0 && !$smarty.foreach.props.last}
-				<br clear="all">
-			{/if}
-		{/foreach}
-		
-		<br clear="all">
-	
+	{foreach from=$properties item=v key=k name=props}
 		<div class="property">
-			<b>{'dao.datacenter_sensor.output'|devblocks_translate|capitalize}:</b>
+			{if $k == 'server'}
+				<b>{$v.label|capitalize}:</b>
+				<a href="javascript:;" onclick="genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={CerberusContexts::CONTEXT_SERVER}&context_id={$v.server->id}',null,false,'500');">{$v.server->name}</a>
+			{elseif $k == 'status'}
+				<b>{'common.status'|devblocks_translate|capitalize}:</b>
+				<div class="badge badge-lightgray">
+				{if $sensor->status == "W"}
+					<span style="color:rgb(204,154,0);font-weight:bold;">Warning</span>
+				{elseif $sensor->status == "C"}
+					<span style="color:rgb(200,0,0);font-weight:bold;">Critical</span>
+				{else}
+					<span style="color:rgb(0,180,0);font-weight:bold;">OK</span>
+				{/if}
+				</div>
+			{else}
+				{include file="devblocks:cerberusweb.core::internal/custom_fields/profile_cell_renderer.tpl"}
+			{/if}
+		</div>
+		{if $smarty.foreach.props.iteration % 3 == 0 && !$smarty.foreach.props.last}
+			<br clear="all">
+		{/if}
+	{/foreach}
+	
+	<br clear="all">
+	
+	<div class="property">
+		<b>{'dao.datacenter_sensor.output'|devblocks_translate|capitalize}:</b>
 {if strstr($sensor->output,"\n")}
 <pre style="margin:0px;margin-left:20px;">{$sensor->output}</pre>
 {else}
 {$sensor->output|escape|nl2br nofilter}
 {/if}
-		</div>
-		
-		<br clear="all">
-		
-		<!-- Toolbar -->
-		<div>
-			<span>
-			{$object_watchers = DAO_ContextLink::getContextLinks($page_context, array($page_context_id), CerberusContexts::CONTEXT_WORKER)}
-			{include file="devblocks:cerberusweb.core::internal/watchers/context_follow_button.tpl" context=$page_context context_id=$page_context_id full=true}
-			</span>		
-
-			<!-- Macros -->
-			{devblocks_url assign=return_url full=true}c=profiles&type=sensor&id={$page_context_id}{/devblocks_url}
-			{include file="devblocks:cerberusweb.core::internal/macros/display/button.tpl" context=$page_context context_id=$page_context_id macros=$macros return_url=$return_url}		
-		
-			<!-- Edit -->
-			<button type="button" id="btnDatacenterSensorEdit"><span class="cerb-sprite sprite-document_edit"></span> Edit</button>
-		</div>
+	</div>
 	
+	<br clear="all">
+		
+	<form class="toolbar" action="{devblocks_url}{/devblocks_url}" method="post" style="margin-bottom:5px;">
+		<!-- Toolbar -->
+		<span>
+		{$object_watchers = DAO_ContextLink::getContextLinks($page_context, array($page_context_id), CerberusContexts::CONTEXT_WORKER)}
+		{include file="devblocks:cerberusweb.core::internal/watchers/context_follow_button.tpl" context=$page_context context_id=$page_context_id full=true}
+		</span>		
+
+		<!-- Macros -->
+		{devblocks_url assign=return_url full=true}c=profiles&type=sensor&id={$page_context_id}{/devblocks_url}
+		{include file="devblocks:cerberusweb.core::internal/macros/display/button.tpl" context=$page_context context_id=$page_context_id macros=$macros return_url=$return_url}		
+	
+		<!-- Edit -->
+		<button type="button" id="btnDatacenterSensorEdit"><span class="cerb-sprite sprite-document_edit"></span> Edit</button>
 	</form>
 	
 	{if $pref_keyboard_shortcuts}
@@ -97,6 +93,11 @@
 		<li><a href="{devblocks_url}ajax.php?c=internal&a=showTabActivityLog&scope=target&point={$point}&context={$page_context}&context_id={$page_context_id}{/devblocks_url}">{'common.activity_log'|devblocks_translate|capitalize}</a></li>		
 		<li><a href="{devblocks_url}ajax.php?c=internal&a=showTabContextComments&point={$point}&context={$page_context}&id={$page_context_id}&point={$point}{/devblocks_url}">{'common.comments'|devblocks_translate|capitalize}</a></li>
 		<li><a href="{devblocks_url}ajax.php?c=internal&a=showTabContextLinks&point={$point}&context={$page_context}&id={$page_context_id}&point={$point}{/devblocks_url}">{'common.links'|devblocks_translate}</a></li>
+		
+		{foreach from=$tab_manifests item=tab_manifest}
+			{$tabs[] = $tab_manifest->params.uri}
+			<li><a href="{devblocks_url}ajax.php?c=profiles&a=showTab&ext_id={$tab_manifest->id}&point={$point}&context={$page_context}&context_id={$page_context_id}{/devblocks_url}"><i>{$tab_manifest->params.title|devblocks_translate}</i></a></li>
+		{/foreach}
 	</ul>
 </div> 
 <br>
@@ -171,3 +172,12 @@ $(document).keypress(function(event) {
 });
 {/if}
 </script>
+
+{$profile_scripts = Extension_ContextProfileScript::getExtensions(true, $page_context)}
+{if !empty($profile_scripts)}
+{foreach from=$profile_scripts item=renderer}
+	{if method_exists($renderer,'renderScript')}
+		{$renderer->renderScript($page_context, $page_context_id)}
+	{/if}
+{/foreach}
+{/if}
