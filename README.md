@@ -3,18 +3,14 @@ Cerb5 Plugins - cerberusweb.datacenter.sensors
 Copyright (C) 2012 WebGroup Media, LLC.  
 [http://www.cerberusweb.com/](http://www.cerberusweb.com/)  
 
-Experimental
-------------
-This plugin is currently being developed and is offered on an experimental basis.  _It is currently only compatible with Cerberus Helpdesk 5.8 or later_.
-
 What's this?
 ------------
-This plugin adds sensors to the datacenter for network and service monitoring.
+This plugin adds flexible Sensor objects that can be used for network and server monitoring, operational intelligence, etc.
 
 Installation
 ------------
-* Change directory to **/cerb5/storage/plugins/**
-* `git clone git://github.com/cerb5-plugins/cerberusweb.datacenter.sensors.git`
+* Change directory to **/cerb6/storage/plugins/**
+* `git clone git://github.com/cerb6-plugins/cerberusweb.datacenter.sensors.git`
 * In your helpdesk, enable the plugin from **Setup->Plugins**.
 * If desired, configure the [PortSensor](http://www.portsensor.com/) daemon on individual servers to monitor metrics (e.g. disk space, memory usage, CPU load).
 

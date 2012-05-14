@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.devblocks.com/schema/plugin.xsd">
 	<id>cerberusweb.datacenter.sensors</id>
-	<name>Datacenter: Sensors</name>
-	<description>This plugin adds sensors to the datacenter for network and service monitoring.</description>
+	<name>Sensors</name>
+	<description>This plugin adds flexible Sensor objects that can be used for network and server monitoring, operational intelligence, etc.</description>
 	<author>WebGroup Media, LLC.</author>
-	<version>0.5.2</version>
+	<version>0.5.3</version>
 	<link>http://www.cerb5.com/</link>
 	<!--<image>plugin.png</image>-->
  
 	<!-- Requirements -->
 
 	<requires>
-		<app_version min="5.8.0" max="5.8.99" />
+		<app_version min="6.0" max="6.0.99" />
 		<php_extension name="curl" />
 	</requires>
  
 	<!-- Plugin Dependencies -->
 	
 	<dependencies>
-		<require plugin_id="cerberusweb.core" version="5.8.0-dev" />
-		<require plugin_id="cerberusweb.datacenter" version="5.8.0-dev" />
+		<require plugin_id="cerberusweb.core" version="6.0.0-dev" />
 	</dependencies>
 
 	<!-- Patches -->
