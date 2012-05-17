@@ -310,7 +310,6 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 			'metric' => 'string',
 			'name' => 'string',
 			'output' => 'string',
-			'server_id' => 'integer',
 			'status' => 'string',
 			'type' => 'string',
 			'updated' => 'timestamp',

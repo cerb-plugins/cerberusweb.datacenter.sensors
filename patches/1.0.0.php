@@ -13,7 +13,6 @@ if(!isset($tables['datacenter_sensor'])) {
 			tag VARCHAR(255) DEFAULT '' NOT NULL,
 			name VARCHAR(255) DEFAULT '' NOT NULL,
 			extension_id VARCHAR(255) DEFAULT '' NOT NULL,
-			server_id INT UNSIGNED NOT NULL,
 			status CHAR(1) DEFAULT 'O' NOT NULL,
 			updated INT UNSIGNED DEFAULT 0 NOT NULL,
 			fail_count TINYINT DEFAULT 0 NOT NULL,
@@ -34,6 +33,14 @@ if(!isset($tables['datacenter_sensor'])) {
 
 	$tables['datacenter_sensor'] = 'datacenter_sensor';
 }
+
+// ===========================================================================
+// Drop `server_id`
+
+list($columns, $indexes) = $db->metaTable('datacenter_sensor');
+
+if(isset($columns['server_id']))
+	$db->Execute("ALTER TABLE datacenter_sensor DROP COLUMN server_id");
 
 // ===========================================================================
 // Enable scheduled task and give defaults

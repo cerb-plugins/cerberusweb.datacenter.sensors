@@ -81,16 +81,6 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 			);
 		}
 		
-		if(!empty($sensor->server_id)) {
-			if(null != ($server = DAO_Server::get($sensor->server_id))) {
-				$properties['server'] = array(
-					'label' => ucfirst($translate->_('cerberusweb.datacenter.common.server')),
-					'type' => null,
-					'server' => $server,
-				);
-			}
-		}
-		
 		$properties['tag'] = array(
 			'label' => ucfirst($translate->_('common.tag')),
 			'type' => Model_CustomField::TYPE_SINGLE_LINE,

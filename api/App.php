@@ -179,7 +179,6 @@ class Page_Sensors extends CerberusPageExtension {
 		@$tag = DevblocksPlatform::importGPC($_REQUEST['tag'],'string','');
 		@$name = DevblocksPlatform::importGPC($_REQUEST['name'],'string','');
 		@$extension_id = DevblocksPlatform::importGPC($_REQUEST['extension_id'],'string','');
-		@$server_id = DevblocksPlatform::importGPC($_REQUEST['server_id'],'integer',0);
 		@$params = DevblocksPlatform::importGPC($_REQUEST['params'], 'array', array());
 		@$do_delete = DevblocksPlatform::importGPC($_REQUEST['do_delete'],'integer',0);
 		
@@ -203,7 +202,6 @@ class Page_Sensors extends CerberusPageExtension {
 			$fields = array(
 				DAO_DatacenterSensor::NAME => $name,
 				DAO_DatacenterSensor::TAG => (!empty($tag) ? $tag : uniqid()),
-				DAO_DatacenterSensor::SERVER_ID => $server_id,
 				DAO_DatacenterSensor::EXTENSION_ID => $extension_id,
 				DAO_DatacenterSensor::PARAMS_JSON => json_encode($params),
 			);

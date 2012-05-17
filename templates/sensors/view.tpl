@@ -74,13 +74,6 @@
 					<a href="{devblocks_url}c=profiles&type=sensor&id={$result.p_id}{/devblocks_url}-{$result.p_name|devblocks_permalink}" class="subject">{$result.p_name}</a>
 					<button type="button" class="peek" style="visibility:hidden;padding:1px;margin:0px 5px;" onclick="genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={$view_context}&context_id={$result.p_id}&view_id={$view->id}',null,false,'500');"><span class="cerb-sprite2 sprite-document-search-result" style="margin-left:2px" title="{$translate->_('views.peek')}"></span></button>
 				</td>
-			{elseif $column=="p_server_id"}
-				<td>
-					{if isset($servers.{$result.$column})}
-						{$server = $servers.{$result.$column}}
-						{$server->name}
-					{/if}
-				</td>
 			{elseif $column=="p_status"}
 				<td>
 					<div class="badge badge-lightgray">

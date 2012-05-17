@@ -17,10 +17,7 @@
 	
 	{foreach from=$properties item=v key=k name=props}
 		<div class="property">
-			{if $k == 'server'}
-				<b>{$v.label|capitalize}:</b>
-				<a href="javascript:;" onclick="genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={CerberusContexts::CONTEXT_SERVER}&context_id={$v.server->id}',null,false,'500');">{$v.server->name}</a>
-			{elseif $k == 'status'}
+			{if $k == 'status'}
 				<b>{'common.status'|devblocks_translate|capitalize}:</b>
 				<div class="badge badge-lightgray">
 				{if $sensor->status == "W"}

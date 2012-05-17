@@ -6,7 +6,6 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 	const STATUS = 'status';
 	const EXTENSION_ID = 'extension_id';
 	const PARAMS_JSON = 'params_json';
-	const SERVER_ID = 'server_id';
 	const UPDATED = 'updated';
 	const FAIL_COUNT = 'fail_count';
 	const IS_DISABLED = 'is_disabled';
@@ -182,7 +181,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 		list($where_sql, $sort_sql, $limit_sql) = self::_getWhereSQL($where, $sortBy, $sortAsc, $limit);
 		
 		// SQL
-		$sql = "SELECT id, tag, name, extension_id, server_id, status, updated, fail_count, is_disabled, params_json, metric, metric_type, metric_delta, output ".
+		$sql = "SELECT id, tag, name, extension_id, status, updated, fail_count, is_disabled, params_json, metric, metric_type, metric_delta, output ".
 			"FROM datacenter_sensor ".
 			$where_sql.
 			$sort_sql.
@@ -238,7 +237,6 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 			$object->tag = $row['tag'];
 			$object->name = $row['name'];
 			$object->extension_id = $row['extension_id'];
-			$object->server_id = $row['server_id'];
 			$object->status = $row['status'];
 			$object->updated = $row['updated'];
 			$object->fail_count = $row['fail_count'];
@@ -305,7 +303,6 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 			"datacenter_sensor.tag as %s, ".
 			"datacenter_sensor.name as %s, ".
 			"datacenter_sensor.extension_id as %s, ".
-			"datacenter_sensor.server_id as %s, ".
 			"datacenter_sensor.status as %s, ".
 			"datacenter_sensor.updated as %s, ".
 			"datacenter_sensor.fail_count as %s, ".
@@ -319,7 +316,6 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 				SearchFields_DatacenterSensor::TAG,
 				SearchFields_DatacenterSensor::NAME,
 				SearchFields_DatacenterSensor::EXTENSION_ID,
-				SearchFields_DatacenterSensor::SERVER_ID,
 				SearchFields_DatacenterSensor::STATUS,
 				SearchFields_DatacenterSensor::UPDATED,
 				SearchFields_DatacenterSensor::FAIL_COUNT,
@@ -467,7 +463,6 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 	const TAG = 'p_tag';
 	const NAME = 'p_name';
 	const EXTENSION_ID = 'p_extension_id';
-	const SERVER_ID = 'p_server_id';
 	const STATUS = 'p_status';
 	const UPDATED = 'p_updated';
 	const FAIL_COUNT = 'p_fail_count';
@@ -500,7 +495,6 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 			self::TAG => new DevblocksSearchField(self::TAG, 'datacenter_sensor', 'tag', $translate->_('common.tag'), Model_CustomField::TYPE_SINGLE_LINE),
 			self::NAME => new DevblocksSearchField(self::NAME, 'datacenter_sensor', 'name', $translate->_('common.name'), Model_CustomField::TYPE_SINGLE_LINE),
 			self::EXTENSION_ID => new DevblocksSearchField(self::EXTENSION_ID, 'datacenter_sensor', 'extension_id', $translate->_('dao.datacenter_sensor.extension_id')),
-			self::SERVER_ID => new DevblocksSearchField(self::SERVER_ID, 'datacenter_sensor', 'server_id', $translate->_('cerberusweb.datacenter.common.server')),
 			self::STATUS => new DevblocksSearchField(self::STATUS, 'datacenter_sensor', 'status', $translate->_('common.status')),
 			self::UPDATED => new DevblocksSearchField(self::UPDATED, 'datacenter_sensor', 'updated', $translate->_('common.updated'), Model_CustomField::TYPE_DATE),
 			self::FAIL_COUNT => new DevblocksSearchField(self::FAIL_COUNT, 'datacenter_sensor', 'fail_count', $translate->_('dao.datacenter_sensor.fail_count'), Model_CustomField::TYPE_NUMBER),
@@ -544,7 +538,6 @@ class Model_DatacenterSensor {
 	public $tag;
 	public $name;
 	public $extension_id;
-	public $server_id;
 	public $status;
 	public $updated;
 	public $fail_count;
@@ -648,7 +641,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				// Strings
 				case SearchFields_DatacenterSensor::EXTENSION_ID:
 				case SearchFields_DatacenterSensor::IS_DISABLED:
-				case SearchFields_DatacenterSensor::SERVER_ID:
 				case SearchFields_DatacenterSensor::STATUS:
 					$pass = true;
 					break;
@@ -688,19 +680,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				}
 				
 				$counts = $this->_getSubtotalCountForStringColumn('DAO_DatacenterSensor', $column, $label_map);
-				break;
-				
-			case SearchFields_DatacenterSensor::SERVER_ID:
-				$label_map = array(
-					'0' => '(blank)',				
-				);
-				
-				$servers = DAO_Server::getAll();
-				if(is_array($servers))
-				foreach($servers as $server)
-					$label_map[$server->id] = $server->name;
-				
-				$counts = $this->_getSubtotalCountForStringColumn('DAO_DatacenterSensor', $column, $label_map, 'in', 'options[]');
 				break;
 				
 			case SearchFields_DatacenterSensor::STATUS:
@@ -744,10 +723,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
 		$tpl->assign('custom_fields', $custom_fields);
 		
-		// Servers
-		$servers = DAO_Server::getAll();
-		$tpl->assign('servers', $servers);
-
 		// Sensors
 		$sensor_manifests = Extension_Sensor::getAll(false);
 		$tpl->assign('sensor_manifests', $sensor_manifests);
@@ -796,17 +771,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				
 			case SearchFields_DatacenterSensor::UPDATED:
 				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__date.tpl');
-				break;
-				
-			case SearchFields_DatacenterSensor::SERVER_ID:
-				$options = array();
-				
-				$servers = DAO_Server::getAll();
-				foreach($servers as $server)
-					$options[$server->id] = $server->name;
-				
-				$tpl->assign('options', $options);
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__list.tpl');
 				break;
 				
 			case SearchFields_DatacenterSensor::STATUS:
@@ -866,22 +830,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				echo implode(' or ', $output);
 				break;
 				
-			case SearchFields_DatacenterSensor::SERVER_ID:
-				$servers = DAO_Server::getAll();
-				
-				$output = array();
-				
-				foreach($values as $v) {
-					if(empty($v))
-						$output['0'] = '(blank)';
-					
-					if(isset($servers[$v]))
-						$output[] = $servers[$v]->name;
-				}
-				
-				echo implode(' or ', $output);
-				break;
-
 			default:
 				parent::renderCriteriaParam($param);
 				break;
@@ -920,7 +868,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				$criteria = new DevblocksSearchCriteria($field,$oper,$bool);
 				break;
 				
-			case SearchFields_DatacenterSensor::SERVER_ID:
 			case SearchFields_DatacenterSensor::STATUS:
 				@$options = DevblocksPlatform::importGPC($_REQUEST['options'],'array',array());
 				$criteria = new DevblocksSearchCriteria($field,$oper,$options);
@@ -1109,26 +1056,8 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			// URL
 			$url_writer = DevblocksPlatform::getUrlService();
 			//$token_values['record_url'] = $url_writer->writeNoProxy(sprintf("c=example.object&id=%d-%s",$object->id, DevblocksPlatform::strToPermalink($object->name)), true);
-			
-			// Server
-			$server_id = (null != $object && !empty($object->server_id)) ? $object->server_id : null;
-			$token_values['server_id'] = $server_id;
 		}
 		
-		// Server
-		$merge_token_labels = array();
-		$merge_token_values = array();
-		CerberusContexts::getContext(CerberusContexts::CONTEXT_SERVER, null, $merge_token_labels, $merge_token_values, null, true);
-
-		CerberusContexts::merge(
-			'server_',
-			'',
-			$merge_token_labels,
-			$merge_token_values,
-			$token_labels,
-			$token_values
-		);		
-
 		return true;
 	}
 
@@ -1244,10 +1173,6 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		// Sensor extensions
 		$sensor_manifests = Extension_Sensor::getAll(false);
 		$tpl->assign('sensor_manifests', $sensor_manifests);
-		
-		// Servers
-		$servers = DAO_Server::getAll();
-		$tpl->assign('servers', $servers);
 		
 		$tpl->display('devblocks:cerberusweb.datacenter.sensors::sensors/peek.tpl');		
 	}

@@ -48,20 +48,6 @@
 		</tr>
 		{/if}
 		
-		{if !empty($servers)}
-		<tr>
-			<td width="1%" nowrap="nowrap" valign="top" align="right">{'cerberusweb.datacenter.common.server'|devblocks_translate}:</td>
-			<td width="99%">
-				<select name="server_id">
-					<option value=""></option>
-					{foreach from=$servers item=server key=server_id}
-						<option value="{$server_id}" {if $server_id==$model->server_id}selected="selected"{/if}>{$server->name}</option>
-					{/foreach}
-				</select>
-			</td>
-		</tr>
-		{/if}
-		
 		{* Watchers *}
 		<tr>
 			<td width="0%" nowrap="nowrap" valign="middle" align="right">{$translate->_('common.watchers')|capitalize}: </td>

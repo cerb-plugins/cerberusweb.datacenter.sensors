@@ -96,14 +96,6 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				'label' => 'Sensor watchers',
 				'context' => CerberusContexts::CONTEXT_WORKER,
 			),
-			'sensor_server_id' => array(
-				'label' => 'Server',
-				'context' => CerberusContexts::CONTEXT_SERVER,
-			),
-			'sensor_server_watchers' => array(
-				'label' => 'Server watchers',
-				'context' => CerberusContexts::CONTEXT_WORKER,
-			),
 		);
 		
 		$vars = parent::getValuesContexts($trigger);
@@ -119,7 +111,6 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 		
 		$labels['sensor_link'] = 'Sensor is linked';
 		
-		$labels['sensor_server_watcher_count'] = 'Sensor server watcher count';
 		$labels['sensor_watcher_count'] = 'Sensor watcher count';
 		
 		$types = array(
@@ -132,7 +123,6 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 			
 			'sensor_link' => null,
 			
-			'sensor_server_watcher_count' => null,
 			'sensor_watcher_count' => null,
 		);
 
@@ -155,7 +145,6 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				$tpl->display('devblocks:cerberusweb.core::events/condition_link.tpl');
 				break;
 				
-			case 'sensor_server_watcher_count':
 			case 'sensor_watcher_count':
 				$tpl->display('devblocks:cerberusweb.core::internal/decisions/conditions/_number.tpl');
 				break;
@@ -212,15 +201,11 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				}
 				break;
 
-			case 'sensor_server_watcher_count':
 			case 'sensor_watcher_count':
 				$not = (substr($params['oper'],0,1) == '!');
 				$oper = ltrim($params['oper'],'!');
 				
 				switch($token) {
-					case 'sensor_server_watcher_count':
-						$value = count($dict->sensor_server_watchers);
-						break;
 					case 'sensor_watcher_count':
 					default:
 						$value = count($dict->sensor_watchers);
