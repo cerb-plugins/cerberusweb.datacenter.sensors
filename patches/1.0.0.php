@@ -25,7 +25,6 @@ if(!isset($tables['datacenter_sensor'])) {
 			PRIMARY KEY (id),
 			INDEX extension_id (extension_id),
 			INDEX status (status),
-			INDEX server_id (server_id),
 			INDEX updated (updated)
 		) ENGINE=%s;
 	", APP_DB_ENGINE);
