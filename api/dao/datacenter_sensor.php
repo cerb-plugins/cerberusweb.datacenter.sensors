@@ -645,6 +645,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 					$pass = true;
 					break;
 					
+				case SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK:
 				case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
 					$pass = true;
 					break;
@@ -696,6 +697,10 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				$counts = $this->_getSubtotalCountForBooleanColumn('DAO_DatacenterSensor', $column);
 				break;
 			
+			case SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK:
+				$counts = $this->_getSubtotalCountForContextLinkColumn('DAO_DatacenterSensor', 'cerberusweb.contexts.datacenter.sensor', $column);
+				break;
+				
 			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
 				$counts = $this->_getSubtotalCountForWatcherColumn('DAO_DatacenterSensor', $column);
 				break;
