@@ -97,7 +97,7 @@
 		});
 		
 		$(this).find('select[name=extension_id]').change(function() {
-			genericAjaxGet($(this).next('DIV.params'), 'c=datacenter&a=handleTabAction&tab=cerberusweb.datacenter.tab.sensors&action=renderConfigExtension&extension_id=' + $(this).val() + "&sensor_id={$model->id}");
+			genericAjaxGet($(this).next('DIV.params'), 'c=datacenter.sensors&a=renderConfigExtension&extension_id=' + $(this).val() + "&sensor_id={$model->id}");
 		});
 		
 		$(this).find('input:text:first').focus();
