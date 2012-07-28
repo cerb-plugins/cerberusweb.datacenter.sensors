@@ -227,5 +227,21 @@ class Page_Sensors extends CerberusPageExtension {
 			if(null != ($view = C4_AbstractViewLoader::getView($view_id)))
 				$view->render(); 
 		}
-	}	
+	}
+	
+	function renderConfigExtensionAction() {
+		$extension_id = DevblocksPlatform::importGPC($_REQUEST['extension_id'], 'string', '');
+		$sensor_id = DevblocksPlatform::importGPC($_REQUEST['sensor_id'], 'integer', '0');
+		
+		if(null != ($tab_mft = DevblocksPlatform::getExtension($extension_id))
+				&& null != ($inst = $tab_mft->createInstance())
+				&& $inst instanceof Extension_Sensor) {
+			
+			if(null == ($sensor = DAO_DatacenterSensor::get($sensor_id))) {
+				$inst->renderConfig();
+			} else {
+				$inst->renderConfig($sensor->params);
+			}
+		}
+	}
 };
