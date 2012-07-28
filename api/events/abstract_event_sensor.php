@@ -145,6 +145,16 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				$tpl->display('devblocks:cerberusweb.core::events/condition_link.tpl');
 				break;
 				
+			case 'sensor_status':
+				$options = array(
+					'OK' => 'OK',
+					'Warning' => 'Warning',
+					'Critical' => 'Critical',
+				);
+				$tpl->assign('options', $options);
+				$tpl->display('devblocks:cerberusweb.core::internal/decisions/conditions/_list.tpl');
+				break;
+				
 			case 'sensor_watcher_count':
 				$tpl->display('devblocks:cerberusweb.core::internal/decisions/conditions/_number.tpl');
 				break;
@@ -201,6 +211,30 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				}
 				break;
 
+			case 'sensor_status':
+				$not = (substr($params['oper'],0,1) == '!');
+				$oper = ltrim($params['oper'],'!');
+				@$value = $dict->$token;
+				
+				if(!isset($params['values']) || !is_array($params['values'])) {
+					$pass = false;
+					break;
+				}
+				
+				switch($oper) {
+					case 'in':
+						$pass = false;
+						foreach($params['values'] as $v) {
+							if($v == $value) {
+								$pass = true;
+								break;
+							}
+						}
+						break;
+				}
+				$pass = ($not) ? !$pass : $pass;
+				break;
+				
 			case 'sensor_watcher_count':
 				$not = (substr($params['oper'],0,1) == '!');
 				$oper = ltrim($params['oper'],'!');
