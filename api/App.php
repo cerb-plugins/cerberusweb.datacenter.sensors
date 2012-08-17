@@ -215,17 +215,16 @@ class Page_Sensors extends CerberusPageExtension {
 				@$is_watcher = DevblocksPlatform::importGPC($_REQUEST['is_watcher'],'integer',0);
 				if($is_watcher)
 					CerberusContexts::addWatchers('cerberusweb.contexts.datacenter.sensor', $id, $active_worker->id);
+				
+				// View marquee
+				if(!empty($id) && !empty($view_id)) {
+					C4_AbstractView::setMarqueeContextCreated($view_id, 'cerberusweb.contexts.datacenter.sensor', $id);
+				}
 			}
 			
 			// Custom field saves
 			@$field_ids = DevblocksPlatform::importGPC($_POST['field_ids'], 'array', array());
 			DAO_CustomFieldValue::handleFormPost('cerberusweb.contexts.datacenter.sensor', $id, $field_ids);
-		}
-		
-		// Reload view?
-		if(!empty($view_id)) {
-			if(null != ($view = C4_AbstractViewLoader::getView($view_id)))
-				$view->render(); 
 		}
 	}
 	
