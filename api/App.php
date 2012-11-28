@@ -245,3 +245,50 @@ class Page_Sensors extends CerberusPageExtension {
 		}
 	}
 };
+
+class WorkspaceWidgetDatasource_Sensor extends Extension_WorkspaceWidgetDatasource {
+	function renderConfig(Model_WorkspaceWidget $widget, $params=array(), $params_prefix=null) {
+		$tpl = DevblocksPlatform::getTemplateService();
+		
+		$tpl->assign('widget', $widget);
+		$tpl->assign('params', $params);
+		$tpl->assign('params_prefix', $params_prefix);
+		
+		// Sensors
+		
+		if(class_exists('DAO_DatacenterSensor', true)) {
+			$sensors = DAO_DatacenterSensor::getWhere();
+			
+			if(is_array($sensors))
+			foreach($sensors as $sensor_id => $sensor) {
+				if(!in_array($sensor->metric_type, array('decimal','percent')))
+					unset($sensors[$sensor_id]);
+			}
+			$tpl->assign('sensors', $sensors);
+		}		
+		
+		$tpl->display('devblocks:cerberusweb.datacenter.sensors::datasources/config_sensor.tpl');
+	}
+	
+	function getData(Model_WorkspaceWidget $widget, array $params=array()) {
+		// Load sensor
+		if(class_exists('DAO_DatacenterSensor', true)
+			&& null != ($sensor_id = @$params['sensor_id'])
+			&& null != ($sensor = DAO_DatacenterSensor::get($sensor_id))
+			) {
+			
+			switch($sensor->metric_type) {
+				case 'decimal':
+					$params['metric_value'] = floatval($sensor->metric);
+					break;
+				case 'percent':
+					$params['metric_value'] = intval($sensor->metric);
+					break;
+				default:
+					$params['metric_value'] = 0;
+			}
+		}
+
+		return $params;
+	}
+};

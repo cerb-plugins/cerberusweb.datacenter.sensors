@@ -7,14 +7,14 @@
 	<version>0.5.11</version>
 	<link>http://www.cerbweb.com/book/latest/plugins/cerberusweb.datacenter.sensors.html</link>
 	<image>plugin.png</image>
- 
+
 	<!-- Requirements -->
 
 	<requires>
 		<app_version min="6.2" max="6.2.99" />
 		<php_extension name="curl" />
 	</requires>
- 
+
 	<!-- Plugin Dependencies -->
 	
 	<dependencies>
@@ -116,6 +116,25 @@
 			</params>
 		</extension>
 
+		<!-- Workspace Widgets -->
+		
+		<extension point="cerberusweb.ui.workspace.widget.datasource">
+			<id>cerberusweb.datacenter.sensor.widget.datasource</id>
+			<name>Sensor</name>
+			<class>
+				<file>api/App.php</file>
+				<name>WorkspaceWidgetDatasource_Sensor</name>
+			</class>
+			<params>
+				<param key="widgets">
+					<value>
+						<data key="core.workspace.widget.counter" />
+						<data key="core.workspace.widget.gauge" />
+					</value>
+				</param>
+			</params>
+		</extension>
+
 		<!-- Pages -->
 
 		<extension point="cerberusweb.page">
@@ -191,7 +210,7 @@
 			<params>
 				<param key="uri" value="sensors" />
 			</params>
-		</extension>		
+		</extension>
 		
-    </extensions> 
+	</extensions> 
 </plugin>
