@@ -52,6 +52,14 @@
 		
 	</class_loader>
 
+	<!-- Activity Points -->
+	
+	<activity_points>
+		<activity point="datacenter.sensor.status">
+			<param key="label_key" value="Sensor Status Changed" />
+		</activity>
+	</activity_points>
+
 	<!-- Extensions -->
  
 	<extensions>
