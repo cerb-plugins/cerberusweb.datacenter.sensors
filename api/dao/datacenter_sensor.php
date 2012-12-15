@@ -30,62 +30,39 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 		if(!is_array($ids))
 			$ids = array($ids);
 		
-		/*
-		 * Make a diff for the requested objects in batches
-		 */
-        
-    	$chunks = array_chunk($ids, 25, true);
-    	while($batch_ids = array_shift($chunks)) {
-	    	$objects = DAO_DatacenterSensor::getWhere(sprintf("id IN (%s)", implode(',', $batch_ids)));
-	    	$object_changes = array();
-	    	
-	    	foreach($objects as $object_id => $object) {
-	    		$pre_fields = get_object_vars($object);
-	    		$changes = array();
-	    		
-	    		foreach($fields as $field_key => $field_val) {
-	    			if(!isset($pre_fields[$field_key]))
-	    				continue;
-	    			
-	    			// Make sure the value of the field actually changed
-	    			if($pre_fields[$field_key] != $field_val) {
-	    				$changes[$field_key] = array('from' => $pre_fields[$field_key], 'to' => $field_val);
-	    			}
-	    		}
-	    		
-	    		// If we had changes
-	    		if(!empty($changes)) {
-	    			$object_changes[$object_id] = array(
-	    				'model' => array_merge($pre_fields, $fields),
-	    				'changes' => $changes,
-	    			);
-	    		}
-	    	}
-	    	
-	    	// Update
-			parent::_update($ids, 'datacenter_sensor', $fields);
+		// Make a diff for the requested objects in batches
+		
+		$chunks = array_chunk($ids, 100, true);
+		while($batch_ids = array_shift($chunks)) {
+			if(empty($batch_ids))
+				continue;
 			
-	    	if(!empty($object_changes)) {
-		    	// Local events
-		    	self::_processUpdateEvents($object_changes);
-		    	
-		        /*
-		         * Trigger an event about the changes
-		         */
-			    $eventMgr = DevblocksPlatform::getEventService();
-			    $eventMgr->trigger(
-			        new Model_DevblocksEvent(
-			            'dao.datacener.sensor.update',
-		                array(
-		                    'objects' => $object_changes,
-		                )
-		            )
-			    );
-			    
-			    // Log the context update
-		   		DevblocksPlatform::markContextChanged('cerberusweb.contexts.datacenter.sensor', $ids);
-	    	}
-    	}
+			// Get state before changes
+			$object_changes = parent::_getUpdateDeltas($batch_ids, $fields, get_class());
+
+			// Make changes
+			parent::_update($batch_ids, 'datacenter_sensor', $fields);
+			
+			// Send events
+			if(!empty($object_changes)) {
+				// Local events
+				self::_processUpdateEvents($object_changes);
+				
+				// Trigger an event about the changes
+				$eventMgr = DevblocksPlatform::getEventService();
+				$eventMgr->trigger(
+					new Model_DevblocksEvent(
+						'dao.datacenter.sensor.update',
+						array(
+							'objects' => $object_changes,
+						)
+					)
+				);
+				
+				// Log the context update
+				DevblocksPlatform::markContextChanged(CerberusContexts::CONTEXT_SENSOR, $batch_ids);
+			}
+		}
 	}
 	
 	static function _processUpdateEvents($objects) {
@@ -122,7 +99,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 	    			}
     			}
     			
-    			if(isset($model[DAO_DatacenterSensor::METRIC_DELTA]) 
+    			if(isset($model[DAO_DatacenterSensor::METRIC_DELTA])
     				&& $model[DAO_DatacenterSensor::METRIC_DELTA] != $delta) {
 		    			$sql = sprintf("UPDATE datacenter_sensor SET metric_delta = %s WHERE id = %d",
 		    				$db->qstr($delta),
@@ -161,8 +138,8 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 				CerberusContexts::logActivity('datacenter.sensor.status', 'cerberusweb.contexts.datacenter.sensor', $object_id, $entry);
     		}
     		
-    	} // foreach		
-	}	
+    	} // foreach
+	}
 	
 	static function updateWhere($fields, $where) {
 		parent::_updateWhere('datacenter_sensor', $fields, $where);
@@ -208,7 +185,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 	}
 	
 	/**
-	 * 
+	 *
 	 * @param string $tag
 	 * @return Model_DatacenterSensor
 	 */
@@ -247,7 +224,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 			$object->output = $row['output'];
 			
 			@$json = json_decode($row['params_json'], true);
-			$object->params = !empty($json) ? $json : array(); 
+			$object->params = !empty($json) ? $json : array();
 			
 			$objects[$object->id] = $object;
 		}
@@ -418,7 +395,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 		$has_multiple_values = $query_parts['has_multiple_values'];
 		$sort_sql = $query_parts['sort'];
 		
-		$sql = 
+		$sql =
 			$select_sql.
 			$join_sql.
 			$where_sql.
@@ -446,7 +423,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 
 		// [JAS]: Count all
 		if($withCounts) {
-			$count_sql = 
+			$count_sql =
 				($has_multiple_values ? "SELECT COUNT(DISTINCT datacenter_sensor.id) " : "SELECT COUNT(datacenter_sensor.id) ").
 				$join_sql.
 				$where_sql;
@@ -531,7 +508,7 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 		// Sort by label (translation-conscious)
 		DevblocksPlatform::sortObjects($columns, 'db_label');
 
-		return $columns;		
+		return $columns;
 	}
 };
 
@@ -717,7 +694,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		}
 		
 		return $counts;
-	}	
+	}
 	
 	function render() {
 		$this->_sanitize();
@@ -965,7 +942,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		}
 
 		unset($ids);
-	}			
+	}
 };
 
 class Context_Sensor extends Extension_DevblocksContext implements IDevblocksContextProfile, IDevblocksContextPeek {
@@ -1100,7 +1077,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		}
 		
 		return $values;
-	}	
+	}
 	
 	function getChooserView($view_id=null) {
 		$active_worker = CerberusApplication::getActiveWorker();
@@ -1118,7 +1095,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			SearchFields_DatacenterSensor::NAME,
 			SearchFields_DatacenterSensor::STATUS,
 			SearchFields_DatacenterSensor::OUTPUT,
-			SearchFields_DatacenterSensor::METRIC_DELTA,			
+			SearchFields_DatacenterSensor::METRIC_DELTA,
 			SearchFields_DatacenterSensor::UPDATED,
 		);
 		$view->addParams(array(
@@ -1136,7 +1113,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		$view_id = str_replace('.','_',$this->id);
 		
 		$defaults = new C4_AbstractViewModel();
-		$defaults->id = $view_id; 
+		$defaults->id = $view_id;
 		$defaults->class_name = $this->getViewClass();
 		$view = C4_AbstractViewLoader::getView($view_id, $defaults);
 		
@@ -1168,7 +1145,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		
 		// Custom fields
 		
-		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor'); 
+		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
 		$tpl->assign('custom_fields', $custom_fields);
 
 		if(!empty($model)) {
@@ -1181,6 +1158,6 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		$sensor_manifests = Extension_Sensor::getAll(false);
 		$tpl->assign('sensor_manifests', $sensor_manifests);
 		
-		$tpl->display('devblocks:cerberusweb.datacenter.sensors::sensors/peek.tpl');		
+		$tpl->display('devblocks:cerberusweb.datacenter.sensors::sensors/peek.tpl');
 	}
 };
