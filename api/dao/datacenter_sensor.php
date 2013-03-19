@@ -1,5 +1,5 @@
 <?php
-class DAO_DatacenterSensor extends C4_ORMHelper {
+class DAO_DatacenterSensor extends Cerb_ORMHelper {
 	const ID = 'id';
 	const TAG = 'tag';
 	const NAME = 'name';
@@ -192,7 +192,7 @@ class DAO_DatacenterSensor extends C4_ORMHelper {
 	static function getByTag($tag) {
 		$objects = self::getWhere(sprintf("%s = %s",
 			self::TAG,
-			C4_ORMHelper::qstr($tag)
+			Cerb_ORMHelper::qstr($tag)
 		));
 		
 		if(empty($objects) || !is_array($objects))

@@ -133,7 +133,7 @@ class Cron_WgmDatacenterSensors extends CerberusCronPageExtension {
 			sprintf("%s = 0 AND %s != %s",
 				DAO_DatacenterSensor::IS_DISABLED,
 				DAO_DatacenterSensor::EXTENSION_ID,
-				C4_ORMHelper::qstr('cerberusweb.datacenter.sensor.external')
+				Cerb_ORMHelper::qstr('cerberusweb.datacenter.sensor.external')
 			),
 			DAO_DatacenterSensor::UPDATED,
 			true,

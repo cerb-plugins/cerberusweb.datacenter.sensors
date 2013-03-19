@@ -1,8 +1,8 @@
 <?php
 /***********************************************************************
-| Cerb(tm) developed by WebGroup Media, LLC.
+| Cerb(tm) developed by Webgroup Media, LLC.
 |-----------------------------------------------------------------------
-| All source code & content (c) Copyright 2012, WebGroup Media LLC
+| All source code & content (c) Copyright 2013, Webgroup Media LLC
 |   unless specifically noted otherwise.
 |
 | This source code is released under the Devblocks Public License.
@@ -19,7 +19,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 	protected $_event_id = null; // override
 
 	/**
-	 * 
+	 *
 	 * @param integer $sensor_id
 	 * @return Model_DevblocksEvent
 	 */
@@ -52,7 +52,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				'sensor_id' => $sensor_id,
 			)
 		);
-	}	
+	}
 	
 	function setEvent(Model_DevblocksEvent $event_model=null) {
 		$labels = array();
@@ -83,7 +83,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 		 */
 
 		$this->setLabels($labels);
-		$this->setValues($values);		
+		$this->setValues($values);
 	}
 	
 	function getValuesContexts($trigger) {
@@ -128,7 +128,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 
 		$conditions = $this->_importLabelsTypesAsConditions($labels, $types);
 		
-		return $conditions;		
+		return $conditions;
 	}
 	
 	function renderConditionExtension($token, $trigger, $params=array(), $seq=null) {
@@ -270,7 +270,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 	}
 	
 	function getActionExtensions() {
-		$actions = 
+		$actions =
 			array(
 				'add_watchers' => array('label' =>'Add watchers'),
 				'create_comment' => array('label' =>'Create a comment'),
@@ -281,7 +281,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				'set_links' => array('label' => 'Set links'),
 				'unschedule_behavior' => array('label' => 'Unschedule behavior'),
 			)
-			+ DevblocksEventHelper::getActionCustomFields('cerberusweb.contexts.datacenter.sensor')
+			+ DevblocksEventHelper::getActionCustomFieldsFromLabels($this->getLabels())
 			;
 			
 		return $actions;
@@ -339,8 +339,8 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				break;
 				
 			default:
-				if('set_cf_' == substr($token,0,7)) {
-					$field_id = substr($token,7);
+				if(preg_match('#set_cf_(.*?)_custom_([0-9]+)#', $token, $matches)) {
+					$field_id = $matches[2];
 					$custom_field = DAO_CustomField::get($field_id);
 					DevblocksEventHelper::renderActionSetCustomField($custom_field);
 				}
@@ -392,23 +392,8 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				break;
 				
 			default:
-				if('set_cf_' == substr($token,0,7)) {
-					$field_id = substr($token,7);
-					$custom_field = DAO_CustomField::get($field_id);
-					$context = null;
-					$context_id = null;
-					
-					// If different types of custom fields, need to find the proper context_id
-					switch($custom_field->context) {
-						case 'cerberusweb.contexts.datacenter.sensor':
-							$context = $custom_field->context;
-							$context_id = $sensor_id;
-							break;
-					}
-					
-					if(!empty($context) && !empty($context_id))
-						return DevblocksEventHelper::simulateActionSetCustomField($custom_field, 'sensor_custom', $params, $dict, $context, $context_id);
-				}
+				if(preg_match('#set_cf_(.*?)_custom_([0-9]+)#', $token))
+					return DevblocksEventHelper::simulateActionSetCustomField($token, $params, $dict);
 				break;
 		}
 	}
@@ -453,23 +438,8 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				break;
 				
 			default:
-				if('set_cf_' == substr($token,0,7)) {
-					$field_id = substr($token,7);
-					$custom_field = DAO_CustomField::get($field_id);
-					$context = null;
-					$context_id = null;
-					
-					// If different types of custom fields, need to find the proper context_id
-					switch($custom_field->context) {
-						case 'cerberusweb.contexts.datacenter.sensor':
-							$context = $custom_field->context;
-							$context_id = $sensor_id;
-							break;
-					}
-					
-					if(!empty($context) && !empty($context_id))
-						DevblocksEventHelper::runActionSetCustomField($custom_field, 'sensor_custom', $params, $dict, $context, $context_id);
-				}
+				if(preg_match('#set_cf_(.*?)_custom_([0-9]+)#', $token))
+					return DevblocksEventHelper::runActionSetCustomField($token, $params, $dict);
 				break;
 		}
 	}
