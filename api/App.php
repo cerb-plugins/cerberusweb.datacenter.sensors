@@ -75,7 +75,7 @@ class WgmDatacenterSensorsSensorHttp extends Extension_Sensor {
 			DAO_DatacenterSensor::STATUS => ($success?'O':'C'),
 			DAO_DatacenterSensor::METRIC => ($success?1:0),
 			DAO_DatacenterSensor::OUTPUT => $output,
-		);		
+		);
 		
 		return $success;
 	}
@@ -116,7 +116,7 @@ class WgmDatacenterSensorsSensorPort extends Extension_Sensor {
 			DAO_DatacenterSensor::STATUS => ($success?'O':'C'),
 			DAO_DatacenterSensor::METRIC => ($success?1:0),
 			DAO_DatacenterSensor::OUTPUT => $output,
-		);		
+		);
 		
 		return $success;
 	}
@@ -265,12 +265,12 @@ class WorkspaceWidgetDatasource_Sensor extends Extension_WorkspaceWidgetDatasour
 					unset($sensors[$sensor_id]);
 			}
 			$tpl->assign('sensors', $sensors);
-		}		
+		}
 		
 		$tpl->display('devblocks:cerberusweb.datacenter.sensors::datasources/config_sensor.tpl');
 	}
 	
-	function getData(Model_WorkspaceWidget $widget, array $params=array()) {
+	function getData(Model_WorkspaceWidget $widget, array $params=array(), $params_prefix=null) {
 		// Load sensor
 		if(class_exists('DAO_DatacenterSensor', true)
 			&& null != ($sensor_id = @$params['sensor_id'])

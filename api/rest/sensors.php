@@ -111,7 +111,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	}
 	
 	function getId($id) {
-		$worker = $this->getActiveWorker();
+		$worker = CerberusApplication::getActiveWorker();
 		
 		// ACL
 //		if(!$worker->hasPriv('...'))
@@ -129,7 +129,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	}
 	
 	function search($filters=array(), $sortToken='id', $sortAsc=1, $page=1, $limit=10) {
-		$worker = $this->getActiveWorker();
+		$worker = CerberusApplication::getActiveWorker();
 
 		$custom_field_params = $this->_handleSearchBuildParamsCustomFields($filters, 'cerberusweb.contexts.datacenter.sensor');
 		$params = $this->_handleSearchBuildParams($filters);
@@ -168,7 +168,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	}	
 	
 	function postBulkUpdate() {
-		$worker = $this->getActiveWorker();
+		$worker = CerberusApplication::getActiveWorker();
 
 		$payload = $this->getPayload();
 		$xml = simplexml_load_string($payload);
@@ -228,7 +228,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	}
 	
 	function postSearch() {
-		$worker = $this->getActiveWorker();
+		$worker = CerberusApplication::getActiveWorker();
 		
 		// ACL
 //		if(!$worker->hasPriv('core.addybook'))
@@ -240,7 +240,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	}
 	
 	function putId($id) {
-		$worker = $this->getActiveWorker();
+		$worker = CerberusApplication::getActiveWorker();
 		
 		// Validate the ID
 		if(null == ($sensor = DAO_DatacenterSensor::get($id)))
@@ -300,7 +300,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	}
 	
 	function postCreate() {
-		$worker = $this->getActiveWorker();
+		$worker = CerberusApplication::getActiveWorker();
 		
 		// ACL
 		//if(!$worker->hasPriv('core.tasks.actions.create'))
