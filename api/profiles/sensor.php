@@ -52,11 +52,6 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 		}
 		$tpl->assign('selected_tab', $selected_tab);
 
-		// Custom fields
-		
-		$custom_fields = DAO_CustomField::getAll();
-		$tpl->assign('custom_fields', $custom_fields);
-		
 		// Properties
 		
 		$properties = array();
@@ -105,18 +100,22 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 			'value' => $sensor->metric_type,
 		);
 		
-		@$values = array_shift(DAO_CustomFieldValue::getValuesByContextIds('cerberusweb.contexts.datacenter.sensor', $sensor->id)) or array();
+		// Custom Fields
+
+		@$values = array_shift(DAO_CustomFieldValue::getValuesByContextIds(CerberusContexts::CONTEXT_SENSOR, $sensor->id)) or array();
+		$tpl->assign('custom_field_values', $values);
 		
-		foreach($custom_fields as $cf_id => $cfield) {
-			if(!isset($values[$cf_id]))
-				continue;
+		$properties_cfields = Page_Profiles::getProfilePropertiesCustomFields(CerberusContexts::CONTEXT_SENSOR, $values);
 		
-			$properties['cf_' . $cf_id] = array(
-				'label' => $cfield->name,
-				'type' => $cfield->type,
-				'value' => $values[$cf_id],
-			);
-		}
+		if(!empty($properties_cfields))
+			$properties = array_merge($properties, $properties_cfields);
+		
+		// Custom Field Groups
+
+		$properties_custom_field_groups = Page_Profiles::getProfilePropertiesCustomFieldSets(CerberusContexts::CONTEXT_SENSOR, $sensor->id, $values);
+		$tpl->assign('properties_custom_field_groups', $properties_custom_field_groups);
+		
+		// Properties
 		
 		$tpl->assign('properties', $properties);
 		
@@ -125,10 +124,10 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 		$tpl->assign('macros', $macros);
 		
 		// Tabs
-		$tab_manifests = Extension_ContextProfileTab::getExtensions(false, 'cerberusweb.contexts.datacenter.sensor');
+		$tab_manifests = Extension_ContextProfileTab::getExtensions(false, CerberusContexts::CONTEXT_SENSOR);
 		$tpl->assign('tab_manifests', $tab_manifests);
 		
 		// Template
-		$tpl->display('devblocks:cerberusweb.datacenter.sensors::sensors/profile.tpl');		
+		$tpl->display('devblocks:cerberusweb.datacenter.sensors::sensors/profile.tpl');
 	}
 };

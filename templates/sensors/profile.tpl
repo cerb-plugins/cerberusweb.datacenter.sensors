@@ -12,44 +12,7 @@
 
 <div style="clear:both;"></div>
 
-<fieldset class="properties">
-	<legend>{'datacenter.sensors.common.sensor'|devblocks_translate|capitalize}</legend>
-	
-	{foreach from=$properties item=v key=k name=props}
-		<div class="property">
-			{if $k == 'status'}
-				<b>{'common.status'|devblocks_translate|capitalize}:</b>
-				<div class="badge badge-lightgray">
-				{if $sensor->status == "W"}
-					<span style="color:rgb(204,154,0);font-weight:bold;">Warning</span>
-				{elseif $sensor->status == "C"}
-					<span style="color:rgb(200,0,0);font-weight:bold;">Critical</span>
-				{else}
-					<span style="color:rgb(0,180,0);font-weight:bold;">OK</span>
-				{/if}
-				</div>
-			{else}
-				{include file="devblocks:cerberusweb.core::internal/custom_fields/profile_cell_renderer.tpl"}
-			{/if}
-		</div>
-		{if $smarty.foreach.props.iteration % 3 == 0 && !$smarty.foreach.props.last}
-			<br clear="all">
-		{/if}
-	{/foreach}
-	
-	<br clear="all">
-	
-	<div class="property">
-		<b>{'dao.datacenter_sensor.output'|devblocks_translate|capitalize}:</b>
-{if strstr($sensor->output,"\n")}
-<pre style="margin:0px;margin-left:20px;">{$sensor->output}</pre>
-{else}
-{$sensor->output|escape|nl2br nofilter}
-{/if}
-	</div>
-	
-	<br clear="all">
-		
+<div class="cerb-profile-toolbar">
 	<form class="toolbar" action="{devblocks_url}{/devblocks_url}" method="post" style="margin-bottom:5px;">
 		<!-- Toolbar -->
 		<span>
@@ -73,7 +36,50 @@
 		(<b>1-9</b>) change tab
 	</small> 
 	{/if}
+</div>
+
+<fieldset class="properties">
+	<legend>{'datacenter.sensors.common.sensor'|devblocks_translate|capitalize}</legend>
+	
+	<div style="margin-left:15px;">
+	{foreach from=$properties item=v key=k name=props}
+		<div class="property">
+			{if $k == 'status'}
+				<b>{'common.status'|devblocks_translate|capitalize}:</b>
+				<div class="badge badge-lightgray">
+				{if $sensor->status == "W"}
+					<span style="color:rgb(204,154,0);font-weight:bold;">Warning</span>
+				{elseif $sensor->status == "C"}
+					<span style="color:rgb(200,0,0);font-weight:bold;">Critical</span>
+				{else}
+					<span style="color:rgb(0,180,0);font-weight:bold;">OK</span>
+				{/if}
+				</div>
+			{else}
+				{include file="devblocks:cerberusweb.core::internal/custom_fields/profile_cell_renderer.tpl"}
+			{/if}
+		</div>
+		{if $smarty.foreach.props.iteration % 3 == 0 && !$smarty.foreach.props.last}
+			<br clear="all">
+		{/if}
+	{/foreach}
+	<br clear="all">
+	
+	<div class="property">
+		<b>{'dao.datacenter_sensor.output'|devblocks_translate|capitalize}:</b>
+{if strstr($sensor->output,"\n")}
+<pre style="margin:0px;margin-left:20px;">{$sensor->output}</pre>
+{else}
+{$sensor->output|escape|nl2br nofilter}
+{/if}
+	</div>
+	
+	<br clear="all">
+	</div>
+		
 </fieldset>
+
+{include file="devblocks:cerberusweb.core::internal/custom_field_groups/profile_fieldsets.tpl" properties=$properties_custom_field_groups}
 
 <div>
 {include file="devblocks:cerberusweb.core::internal/notifications/context_profile.tpl" context=$page_context context_id=$page_context_id}

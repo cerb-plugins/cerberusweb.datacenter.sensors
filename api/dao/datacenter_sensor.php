@@ -132,10 +132,10 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 						'status_to' => sprintf("%s", $statuses[$status['to']]),
 						),
 					'urls' => array(
-						'sensor' => sprintf("ctx://%s:%d/%s", 'cerberusweb.contexts.datacenter.sensor', $object_id, $model[DAO_DatacenterSensor::NAME]),
+						'sensor' => sprintf("ctx://%s:%d/%s", CerberusContexts::CONTEXT_SENSOR, $object_id, $model[DAO_DatacenterSensor::NAME]),
 						)
 				);
-				CerberusContexts::logActivity('datacenter.sensor.status', 'cerberusweb.contexts.datacenter.sensor', $object_id, $entry);
+				CerberusContexts::logActivity('datacenter.sensor.status', CerberusContexts::CONTEXT_SENSOR, $object_id, $entry);
     		}
     		
     	} // foreach
@@ -353,7 +353,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		if(!is_a($param, 'DevblocksSearchCriteria'))
 			return;
 		
-		$from_context = 'cerberusweb.contexts.datacenter.sensor';
+		$from_context = CerberusContexts::CONTEXT_SENSOR;
 		$from_index = 'datacenter_sensor.id';
 		
 		$param_key = $param->field;
@@ -498,7 +498,7 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 		}
 		
 		// Custom Fields
-		$fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
+		$fields = DAO_CustomField::getByContext(CerberusContexts::CONTEXT_SENSOR);
 
 		if(is_array($fields))
 		foreach($fields as $field_id => $field) {
@@ -678,7 +678,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				break;
 			
 			case SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK:
-				$counts = $this->_getSubtotalCountForContextLinkColumn('DAO_DatacenterSensor', 'cerberusweb.contexts.datacenter.sensor', $column);
+				$counts = $this->_getSubtotalCountForContextLinkColumn('DAO_DatacenterSensor', CerberusContexts::CONTEXT_SENSOR, $column);
 				break;
 				
 			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
@@ -705,7 +705,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		$tpl->assign('view', $this);
 
 		// Custom fields
-		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
+		$custom_fields = DAO_CustomField::getByContext(CerberusContexts::CONTEXT_SENSOR);
 		$tpl->assign('custom_fields', $custom_fields);
 		
 		// Sensors
@@ -937,7 +937,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 			DAO_DatacenterSensor::update($batch_ids, $change_fields);
 
 			// Custom Fields
-			self::_doBulkSetCustomFields('cerberusweb.contexts.datacenter.sensor', $custom_fields, $batch_ids);
+			self::_doBulkSetCustomFields(CerberusContexts::CONTEXT_SENSOR, $custom_fields, $batch_ids);
 			
 			unset($batch_ids);
 		}
@@ -947,7 +947,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 };
 
 class Context_Sensor extends Extension_DevblocksContext implements IDevblocksContextProfile, IDevblocksContextPeek {
-	const ID = 'cerberusweb.contexts.datacenter.sensor';
+	const ID = CerberusContexts::CONTEXT_SENSOR;
 	
 	function getRandom() {
 		return DAO_DatacenterSensor::random();
@@ -1146,11 +1146,11 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		
 		// Custom fields
 		
-		$custom_fields = DAO_CustomField::getByContext('cerberusweb.contexts.datacenter.sensor');
+		$custom_fields = DAO_CustomField::getByContext(CerberusContexts::CONTEXT_SENSOR, false);
 		$tpl->assign('custom_fields', $custom_fields);
 
 		if(!empty($model)) {
-			$custom_field_values = DAO_CustomFieldValue::getValuesByContextIds('cerberusweb.contexts.datacenter.sensor', $model->id);
+			$custom_field_values = DAO_CustomFieldValue::getValuesByContextIds(CerberusContexts::CONTEXT_SENSOR, $model->id);
 			if(isset($custom_field_values[$id]))
 				$tpl->assign('custom_field_values', $custom_field_values[$id]);
 		}
