@@ -66,7 +66,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 
 		$merge_labels = array();
 		$merge_values = array();
-		CerberusContexts::getContext('cerberusweb.contexts.datacenter.sensor', $sensor_id, $merge_labels, $merge_values, null, true);
+		CerberusContexts::getContext(CerberusContexts::CONTEXT_SENSOR, $sensor_id, $merge_labels, $merge_values, null, true);
 
 			// Merge
 			CerberusContexts::merge(
@@ -86,11 +86,17 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 		$this->setValues($values);
 	}
 	
+	function renderSimulatorTarget($trigger, $event_model) {
+		$context = CerberusContexts::CONTEXT_SENSOR;
+		$context_id = $event_model->params['sensor_id'];
+		DevblocksEventHelper::renderSimulatorTarget($context, $context_id, $trigger, $event_model);
+	}
+	
 	function getValuesContexts($trigger) {
 		$vals = array(
 			'sensor_id' => array(
 				'label' => 'Sensor',
-				'context' => 'cerberusweb.contexts.datacenter.sensor',
+				'context' => CerberusContexts::CONTEXT_SENSOR,
 			),
 			'sensor_watchers' => array(
 				'label' => 'Sensor watchers',
@@ -177,7 +183,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 				
 				switch($token) {
 					case 'sensor_link':
-						$from_context = 'cerberusweb.contexts.datacenter.sensor';
+						$from_context = CerberusContexts::CONTEXT_SENSOR;
 						@$from_context_id = $dict->sensor_id;
 						break;
 					default:
