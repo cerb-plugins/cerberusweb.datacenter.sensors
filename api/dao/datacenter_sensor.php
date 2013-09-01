@@ -1005,6 +1005,15 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		);
 	}
 	
+	// [TODO] Interface
+	function getDefaultProperties() {
+		return array(
+			'status',
+			'output',
+			'updated',
+		);
+	}
+	
 	function getContext($object, &$token_labels, &$token_values, $prefix=null) {
 		if(is_null($prefix))
 			$prefix = 'Sensor:';
@@ -1023,6 +1032,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		
 		// Token labels
 		$token_labels = array(
+			'_label' => $prefix,
 			'id' => $prefix.$translate->_('common.id'),
 			'tag' => $prefix.$translate->_('common.tag'),
 			'metric' => $prefix.$translate->_('dao.datacenter_sensor.metric'),
@@ -1031,8 +1041,23 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			'name' => $prefix.$translate->_('common.name'),
 			'output' => $prefix.$translate->_('dao.datacenter_sensor.output'),
 			'status' => $prefix.$translate->_('common.status'),
-			'updated|date' => $prefix.$translate->_('common.updated'),
+			'updated' => $prefix.$translate->_('common.updated'),
 			//'record_url' => $prefix.$translate->_('common.url.record'),
+		);
+		
+		// Token types
+		$token_types = array(
+			'_label' => 'context_url',
+			'id' => Model_CustomField::TYPE_NUMBER,
+			'tag' => Model_CustomField::TYPE_SINGLE_LINE,
+			'metric' => Model_CustomField::TYPE_SINGLE_LINE,
+			'metric_type' => Model_CustomField::TYPE_SINGLE_LINE,
+			'metric_delta' => Model_CustomField::TYPE_NUMBER,
+			'name' => Model_CustomField::TYPE_SINGLE_LINE,
+			'output' => Model_CustomField::TYPE_MULTI_LINE,
+			'status' => Model_CustomField::TYPE_SINGLE_LINE,
+			'updated' => Model_CustomField::TYPE_DATE,
+			//'record_url' => ,
 		);
 		
 		// Custom field/fieldset token labels
@@ -1043,6 +1068,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		$token_values = array();
 		
 		$token_values['_context'] = self::ID;
+		$token_values['_types'] = $token_types;
 		
 		if($object) {
 			$token_values['_loaded'] = true;

@@ -124,7 +124,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 			'sensor_name' => Model_CustomField::TYPE_SINGLE_LINE,
 			'sensor_output' => Model_CustomField::TYPE_SINGLE_LINE,
 			'sensor_tag' => Model_CustomField::TYPE_SINGLE_LINE,
-			'sensor_updated|date' => Model_CustomField::TYPE_DATE,
+			'sensor_updated' => Model_CustomField::TYPE_DATE,
 			'sensor_status' => null,
 			
 			'sensor_link' => null,
