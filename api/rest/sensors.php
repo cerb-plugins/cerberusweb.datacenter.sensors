@@ -69,7 +69,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 		DAO_DatacenterSensor::delete($id);
 
 		$result = array('id' => $id);
-		$this->success($result);		
+		$this->success($result);
 	}
 
 	function translateToken($token, $type='dao') {
@@ -105,7 +105,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	function getContext($id) {
 		$labels = array();
 		$values = array();
-		$context = CerberusContexts::getContext('cerberusweb.contexts.datacenter.sensor', $id, $labels, $values, null, true);
+		$context = CerberusContexts::getContext(CerberusContexts::CONTEXT_SENSOR, $id, $labels, $values, null, true);
 
 		return $values;
 	}
@@ -131,7 +131,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	function search($filters=array(), $sortToken='id', $sortAsc=1, $page=1, $limit=10) {
 		$worker = CerberusApplication::getActiveWorker();
 
-		$custom_field_params = $this->_handleSearchBuildParamsCustomFields($filters, 'cerberusweb.contexts.datacenter.sensor');
+		$custom_field_params = $this->_handleSearchBuildParamsCustomFields($filters, CerberusContexts::CONTEXT_SENSOR);
 		$params = $this->_handleSearchBuildParams($filters);
 		$params = array_merge($params, $custom_field_params);
 				
@@ -164,8 +164,8 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 			'results' => $objects,
 		);
 		
-		return $container;		
-	}	
+		return $container;
+	}
 	
 	function postBulkUpdate() {
 		$worker = CerberusApplication::getActiveWorker();
@@ -288,7 +288,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 		// Handle custom fields
 		$customfields = $this->_handleCustomFields($_POST);
 		if(is_array($customfields))
-			DAO_CustomFieldValue::formatAndSetFieldValues('cerberusweb.contexts.datacenter.sensor', $id, $customfields, true, true, true);
+			DAO_CustomFieldValue::formatAndSetFieldValues(CerberusContexts::CONTEXT_SENSOR, $id, $customfields, true, true, true);
 		
 		// Check required fields
 //		$reqfields = array(DAO_Address::EMAIL);
@@ -369,8 +369,8 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 		
 		// Check required fields
 		$reqfields = array(
-			DAO_DatacenterSensor::NAME, 
-			DAO_DatacenterSensor::EXTENSION_ID, 
+			DAO_DatacenterSensor::NAME,
+			DAO_DatacenterSensor::EXTENSION_ID,
 		);
 		$this->_handleRequiredFields($reqfields, $fields);
 		
@@ -379,7 +379,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 			// Handle custom fields
 			$customfields = $this->_handleCustomFields($_POST);
 			if(is_array($customfields))
-				DAO_CustomFieldValue::formatAndSetFieldValues('cerberusweb.contexts.datacenter.sensor', $id, $customfields, true, true, true);
+				DAO_CustomFieldValue::formatAndSetFieldValues(CerberusContexts::CONTEXT_SENSOR, $id, $customfields, true, true, true);
 			
 			$this->getId($id);
 		}

@@ -114,24 +114,14 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 	
 	function getConditionExtensions() {
 		$labels = $this->getLabels();
+		$types = $this->getTypes();
 		
 		$labels['sensor_link'] = 'Sensor is linked';
-		
 		$labels['sensor_watcher_count'] = 'Sensor watcher count';
 		
-		$types = array(
-			'sensor_metric' => Model_CustomField::TYPE_SINGLE_LINE,
-			'sensor_name' => Model_CustomField::TYPE_SINGLE_LINE,
-			'sensor_output' => Model_CustomField::TYPE_SINGLE_LINE,
-			'sensor_tag' => Model_CustomField::TYPE_SINGLE_LINE,
-			'sensor_updated' => Model_CustomField::TYPE_DATE,
-			'sensor_status' => null,
-			
-			'sensor_link' => null,
-			
-			'sensor_watcher_count' => null,
-		);
-
+		$types['sensor_link'] = null;
+		$types['sensor_watcher_count'] = null;
+		
 		$conditions = $this->_importLabelsTypesAsConditions($labels, $types);
 		
 		return $conditions;
