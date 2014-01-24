@@ -112,7 +112,7 @@
 
 <script type="text/javascript">
 	$(function() {
-		var tabs = $("#datacenterSensorTabs").tabs( { selected:{$selected_tab_idx} } );
+		var tabs = $("#datacenterSensorTabs").tabs( { active:{$selected_tab_idx} } );
 		
 		$('#btnDatacenterSensorEdit').bind('click', function() {
 			$popup = genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={$page_context}&context_id={$page_context_id}',null,false,'550');
@@ -151,7 +151,7 @@ $(document).keypress(function(event) {
 			try {
 				idx = event.which-49;
 				$tabs = $("#datacenterSensorTabs").tabs();
-				$tabs.tabs('select', idx);
+				$tabs.tabs('option', 'active', idx);
 			} catch(ex) { } 
 			break;
 		case 101:  // (E) edit
