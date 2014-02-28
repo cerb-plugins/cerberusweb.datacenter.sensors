@@ -57,6 +57,8 @@
 	<activity_points>
 		<activity point="datacenter.sensor.status">
 			<param key="label_key" value="Sensor Status Changed" />
+			<param key="string_key" value="activities.datacenter.sensor.status" />
+			<param key="options" value="" />
 		</activity>
 	</activity_points>
 
