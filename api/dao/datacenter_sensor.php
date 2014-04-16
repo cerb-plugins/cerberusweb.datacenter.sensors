@@ -26,7 +26,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		return $id;
 	}
 	
-	static function update($ids, $fields) {
+	static function update($ids, $fields, $check_deltas=true) {
 		if(!is_array($ids))
 			$ids = array($ids);
 		
@@ -36,17 +36,19 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		while($batch_ids = array_shift($chunks)) {
 			if(empty($batch_ids))
 				continue;
-			
-			// Get state before changes
-			$object_changes = parent::_getUpdateDeltas($batch_ids, $fields, get_class());
+
+			// Send events
+			if($check_deltas) {
+				CerberusContexts::checkpointChanges(CerberusContexts::CONTEXT_SENSOR, $batch_ids);
+			}
 
 			// Make changes
 			parent::_update($batch_ids, 'datacenter_sensor', $fields);
 			
 			// Send events
-			if(!empty($object_changes)) {
+			if($check_deltas) {
 				// Local events
-				self::_processUpdateEvents($object_changes);
+				self::_processUpdateEvents($batch_ids, $fields);
 				
 				// Trigger an event about the changes
 				$eventMgr = DevblocksPlatform::getEventService();
@@ -54,7 +56,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 					new Model_DevblocksEvent(
 						'dao.datacenter.sensor.update',
 						array(
-							'objects' => $object_changes,
+							'fields' => $fields,
 						)
 					)
 				);
@@ -65,61 +67,73 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		}
 	}
 	
-	static function _processUpdateEvents($objects) {
+	static function _processUpdateEvents($ids, $change_fields) {
+		// We only care about these fields, so abort if they aren't referenced
+
+		$observed_fields = array(
+			DAO_DatacenterSensor::METRIC,
+			DAO_DatacenterSensor::STATUS,
+		);
+		
+		$used_fields = array_intersect($observed_fields, array_keys($change_fields));
+		
+		if(empty($used_fields))
+			return;
+		
+		// Load records only if they're needed
+		
+		if(false == ($models = DAO_DatacenterSensor::getIds($ids)))
+			return;
+		
 		$db = DevblocksPlatform::getDatabaseService();
 		
-    	if(is_array($objects))
-    	foreach($objects as $object_id => $object) {
-    		@$model = $object['model']; /* @var $model Model_DatacenterSensor */
-    		@$changes = $object['changes'];
-    		
-    		if(empty($model) || empty($changes))
-    			continue;
-    		
-    		// Delta
-    		@$metric = $changes[DAO_DatacenterSensor::METRIC];
-    		
-    		if(in_array($model[DAO_DatacenterSensor::METRIC_TYPE], array('updown','decimal','percent','number'))) {
-    			$delta = 0;
-    			
-    			if(!empty($metric)) {
-	    			switch($model[DAO_DatacenterSensor::METRIC_TYPE]) {
-	    				case 'updown':
-	    					$delta = (0 == strcasecmp($metric['to'],'UP')) ? 1 : -1;
-	    					break;
-	    				case 'number':
-	    					$delta = intval($metric['to']) - intval($metric['from']);
-	    					break;
-	    				case 'decimal':
-	    					$delta = floatval($metric['to']) - floatval($metric['from']);
-	    					break;
-	    				case 'percent':
-	    					$delta = intval($metric['to']) - intval($metric['from']);
-	    					break;
-	    			}
-    			}
-    			
-    			if(isset($model[DAO_DatacenterSensor::METRIC_DELTA])
-    				&& $model[DAO_DatacenterSensor::METRIC_DELTA] != $delta) {
-		    			$sql = sprintf("UPDATE datacenter_sensor SET metric_delta = %s WHERE id = %d",
-		    				$db->qstr($delta),
-		    				$model[DAO_DatacenterSensor::ID]
-		    			);
-		    			$db->Execute($sql);
-    			}
-    		}
-    		
+		foreach($models as $model) {
+			
+			// Compute deltas
+			
+			@$metric = $change_fields[DAO_DatacenterSensor::METRIC_TYPE];
+			
+			if(in_array($model->metric_type, array('updown','decimal','percent','number'))) {
+				$delta = 0;
+				
+				if(!empty($metric)) {
+					switch($model->metric_type) {
+						case 'updown':
+							$delta = (0 == strcasecmp($metric['to'],'UP')) ? 1 : -1;
+							break;
+						case 'number':
+							$delta = intval($metric['to']) - intval($metric['from']);
+							break;
+						case 'decimal':
+							$delta = floatval($metric['to']) - floatval($metric['from']);
+							break;
+						case 'percent':
+							$delta = intval($metric['to']) - intval($metric['from']);
+							break;
+					}
+				}
+				
+				// [TODO] This could be done better in DAO::update() ?
+				if($model->metric_delta && $model->metric_delta != $delta) {
+					$sql = sprintf("UPDATE datacenter_sensor SET metric_delta = %s WHERE id = %d",
+						$db->qstr($delta),
+						$model->id
+					);
+					$db->Execute($sql);
+				}
+			}
+			
 			// This can also detect when the status changes OK->PROBLEM or PROBLEM->OK
-    		
-    		$statuses = array(
-    			'O' => 'OK',
-    			'W' => 'Warning',
-    			'C' => 'Critical',
-    		);
-    		
-    		@$status = $changes[DAO_DatacenterSensor::STATUS];
-    		
-    		if(!empty($status) && !empty($model[DAO_DatacenterSensor::STATUS])) {
+			
+			$statuses = array(
+				'O' => 'OK',
+				'W' => 'Warning',
+				'C' => 'Critical',
+			);
+			
+			@$status = $change_fields[DAO_DatacenterSensor::STATUS];
+			
+			if($status && $status != $model->status) {
 				/*
 				 * Log sensor status (sensor.status.*)
 				 */
@@ -127,18 +141,17 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 					//{{sensor}} sensor status changed from {{status_from}} to {{status_to}}
 					'message' => 'activities.datacenter.sensor.status',
 					'variables' => array(
-						'sensor' => sprintf("%s", $model[DAO_DatacenterSensor::NAME]),
-						'status_from' => sprintf("%s", $statuses[$status['from']]),
-						'status_to' => sprintf("%s", $statuses[$status['to']]),
+						'sensor' => sprintf("%s", $model->name),
+						'status_to' => sprintf("%s", $model->status),
 						),
 					'urls' => array(
-						'sensor' => sprintf("ctx://%s:%d/%s", CerberusContexts::CONTEXT_SENSOR, $object_id, $model[DAO_DatacenterSensor::NAME]),
+						'sensor' => sprintf("ctx://%s:%d/%s", CerberusContexts::CONTEXT_SENSOR, $model->id, $model->name),
 						)
 				);
-				CerberusContexts::logActivity('datacenter.sensor.status', CerberusContexts::CONTEXT_SENSOR, $object_id, $entry);
-    		}
-    		
-    	} // foreach
+				CerberusContexts::logActivity('datacenter.sensor.status', CerberusContexts::CONTEXT_SENSOR, $model->id, $entry);
+			}
+		}
+		
 	}
 	
 	static function updateWhere($fields, $where) {
@@ -247,17 +260,17 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		
 		// Fire event
 		/*
-	    $eventMgr = DevblocksPlatform::getEventService();
-	    $eventMgr->trigger(
-	        new Model_DevblocksEvent(
-	            'context.delete',
-                array(
-                	'context' => 'cerberusweb.contexts.',
-                	'context_ids' => $ids
-                )
-            )
-	    );
-	    */
+		$eventMgr = DevblocksPlatform::getEventService();
+		$eventMgr->trigger(
+			new Model_DevblocksEvent(
+				'context.delete',
+				array(
+					'context' => 'cerberusweb.contexts.',
+					'context_ids' => $ids
+				)
+			)
+		);
+		*/
 		
 		return true;
 	}
@@ -273,7 +286,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		if('*'==substr($sortBy,0,1) || !isset($fields[$sortBy]))
 			$sortBy=null;
 
-        list($tables,$wheres) = parent::_parseSearchParams($params, $columns, $fields, $sortBy);
+		list($tables,$wheres) = parent::_parseSearchParams($params, $columns, $fields, $sortBy);
 		
 		$select_sql = sprintf("SELECT ".
 			"datacenter_sensor.id as %s, ".
@@ -360,7 +373,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			case SearchFields_DatacenterSensor::FULLTEXT_COMMENT_CONTENT:
 				$search = Extension_DevblocksSearchSchema::get(Search_CommentContent::ID);
 				$query = $search->getQueryFromParam($param);
-				$ids = $search->query($query, array('context_crc32' => sprintf("%u", crc32($from_context))), 250);
+				$ids = $search->query($query, array('context_crc32' => sprintf("%u", crc32($from_context))));
 				
 				$from_ids = DAO_Comment::getContextIdsByContextAndIds($from_context, $ids);
 				
@@ -387,19 +400,19 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		
 	}
 	
-    /**
-     * Enter description here...
-     *
-     * @param array $columns
-     * @param DevblocksSearchCriteria[] $params
-     * @param integer $limit
-     * @param integer $page
-     * @param string $sortBy
-     * @param boolean $sortAsc
-     * @param boolean $withCounts
-     * @return array
-     */
-    static function search($columns, $params, $limit=10, $page=0, $sortBy=null, $sortAsc=null, $withCounts=true) {
+	/**
+	 * Enter description here...
+	 *
+	 * @param array $columns
+	 * @param DevblocksSearchCriteria[] $params
+	 * @param integer $limit
+	 * @param integer $page
+	 * @param string $sortBy
+	 * @param boolean $sortAsc
+	 * @param boolean $withCounts
+	 * @return array
+	 */
+	static function search($columns, $params, $limit=10, $page=0, $sortBy=null, $sortAsc=null, $withCounts=true) {
 		$db = DevblocksPlatform::getDatabaseService();
 		
 		// Build search queries
@@ -419,14 +432,13 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			$sort_sql;
 			
 		if($limit > 0) {
-    		$rs = $db->SelectLimit($sql,$limit,$page*$limit) or die(__CLASS__ . '('.__LINE__.')'. ':' . $db->ErrorMsg()); /* @var $rs ADORecordSet */
+			$rs = $db->SelectLimit($sql,$limit,$page*$limit) or die(__CLASS__ . '('.__LINE__.')'. ':' . $db->ErrorMsg()); /* @var $rs ADORecordSet */
 		} else {
-		    $rs = $db->Execute($sql) or die(__CLASS__ . '('.__LINE__.')'. ':' . $db->ErrorMsg()); /* @var $rs ADORecordSet */
-            $total = mysqli_num_rows($rs);
+			$rs = $db->Execute($sql) or die(__CLASS__ . '('.__LINE__.')'. ':' . $db->ErrorMsg()); /* @var $rs ADORecordSet */
+			$total = mysqli_num_rows($rs);
 		}
 		
 		$results = array();
-		$total = -1;
 		
 		while($row = mysqli_fetch_assoc($rs)) {
 			$result = array();
@@ -437,13 +449,17 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			$results[$object_id] = $result;
 		}
 
-		// [JAS]: Count all
+		$total = count($results);
+		
 		if($withCounts) {
-			$count_sql =
-				($has_multiple_values ? "SELECT COUNT(DISTINCT datacenter_sensor.id) " : "SELECT COUNT(datacenter_sensor.id) ").
-				$join_sql.
-				$where_sql;
-			$total = $db->GetOne($count_sql);
+			// We can skip counting if we have a less-than-full single page
+			if(!(0 == $page && $total < $limit)) {
+				$count_sql =
+					($has_multiple_values ? "SELECT COUNT(DISTINCT datacenter_sensor.id) " : "SELECT COUNT(datacenter_sensor.id) ").
+					$join_sql.
+					$where_sql;
+				$total = $db->GetOne($count_sql);
+			}
 		}
 		
 		mysqli_free_result($rs);
@@ -1060,6 +1076,8 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			$object = DAO_DatacenterSensor::get($object);
 		} elseif($object instanceof Model_DatacenterSensor) {
 			// It's what we want already.
+		} elseif(is_array($object)) {
+			$object = Cerb_ORMHelper::recastArrayToModel($object, 'Model_DatacenterSensor');
 		} else {
 			$object = null;
 		}

@@ -112,7 +112,10 @@
 
 <script type="text/javascript">
 	$(function() {
-		var tabs = $("#datacenterSensorTabs").tabs( { active:{$selected_tab_idx} } );
+		var tabOptions = Devblocks.getDefaultjQueryUiTabOptions();
+		tabOptions.active = {$selected_tab_idx};
+		
+		var tabs = $("#datacenterSensorTabs").tabs(tabOptions);
 		
 		$('#btnDatacenterSensorEdit').bind('click', function() {
 			$popup = genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={$page_context}&context_id={$page_context_id}',null,false,'550');
