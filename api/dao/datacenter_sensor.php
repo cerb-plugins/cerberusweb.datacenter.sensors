@@ -82,18 +82,30 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		
 		// Load records only if they're needed
 		
+		if(false == ($before_models = CerberusContexts::getCheckpoints(CerberusContexts::CONTEXT_SENSOR, $ids)))
+			return;
+		
 		if(false == ($models = DAO_DatacenterSensor::getIds($ids)))
 			return;
 		
 		$db = DevblocksPlatform::getDatabaseService();
 		
-		foreach($models as $model) {
+		foreach($models as $id => $model) {
+			if(!isset($before_models[$id]))
+				continue;
+			
+			$before_model = (object) $before_models[$id];
 			
 			// Compute deltas
 			
-			@$metric = $change_fields[DAO_DatacenterSensor::METRIC_TYPE];
+			@$metric = $change_fields[DAO_DatacenterSensor::METRIC];
+
+			if($metric == $before_model->metric)
+				unset($change_fields[DAO_DatacenterSensor::METRIC]);
 			
-			if(in_array($model->metric_type, array('updown','decimal','percent','number'))) {
+			if(isset($change_fields[DAO_DatacenterSensor::METRIC])
+				&& in_array($model->metric_type, array('updown','decimal','percent','number'))) {
+				
 				$delta = 0;
 				
 				if(!empty($metric)) {
@@ -123,6 +135,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 				}
 			}
 			
+			// [TODO] Merge with 'Record changed'
 			// This can also detect when the status changes OK->PROBLEM or PROBLEM->OK
 			
 			$statuses = array(
@@ -133,7 +146,10 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			
 			@$status = $change_fields[DAO_DatacenterSensor::STATUS];
 			
-			if($status && $status != $model->status) {
+			if($status == $model->status)
+				unset($change_fields[DAO_DatacenterSensor::STATUS]);
+			
+			if($change_fields[DAO_DatacenterSensor::STATUS]) {
 				/*
 				 * Log sensor status (sensor.status.*)
 				 */
