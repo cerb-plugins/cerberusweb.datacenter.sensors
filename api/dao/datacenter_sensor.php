@@ -146,10 +146,9 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			
 			@$status = $change_fields[DAO_DatacenterSensor::STATUS];
 			
-			if($status == $model->status)
-				unset($change_fields[DAO_DatacenterSensor::STATUS]);
-			
-			if($change_fields[DAO_DatacenterSensor::STATUS]) {
+			// If the status changed
+			if($status != $model->status) {
+				
 				/*
 				 * Log sensor status (sensor.status.*)
 				 */
