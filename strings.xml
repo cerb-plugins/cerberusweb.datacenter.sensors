@@ -43,5 +43,20 @@
 			<tuv xml:lang="en_US"><seg>Output</seg></tuv>
 		</tu>
 		
+		<!-- WgmDatacenterSensorsSensorPort -->
+		
+		<tu tuid='dao.datacenter_sensor.port.hostname'>
+			<tuv xml:lang="en_US"><seg>Hostname or IP:</seg></tuv>
+		</tu>
+		<tu tuid='dao.datacenter_sensor.port.port'>
+			<tuv xml:lang="en_US"><seg>Port:</seg></tuv>
+		</tu>
+                
+		<!-- WgmDatacenterSensorsSensorHttp -->
+		
+		<tu tuid='dao.datacenter_sensor.http.url'>
+			<tuv xml:lang="en_US"><seg>URL:</seg></tuv>
+		</tu>
+                
 	</body>
 </tmx>
