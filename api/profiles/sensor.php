@@ -115,6 +115,21 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 		$properties_custom_fieldsets = Page_Profiles::getProfilePropertiesCustomFieldsets(CerberusContexts::CONTEXT_SENSOR, $sensor->id, $values);
 		$tpl->assign('properties_custom_fieldsets', $properties_custom_fieldsets);
 		
+		// Link counts
+		
+		$properties_links = array(
+			CerberusContexts::CONTEXT_SENSOR => array(
+				$sensor->id => 
+					DAO_ContextLink::getContextLinkCounts(
+						CerberusContexts::CONTEXT_SENSOR,
+						$sensor->id,
+						array(CerberusContexts::CONTEXT_WORKER, CerberusContexts::CONTEXT_CUSTOM_FIELDSET)
+					),
+			),
+		);
+		
+		$tpl->assign('properties_links', $properties_links);
+		
 		// Properties
 		
 		$tpl->assign('properties', $properties);
