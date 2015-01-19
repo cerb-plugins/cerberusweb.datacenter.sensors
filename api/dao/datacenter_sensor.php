@@ -613,7 +613,7 @@ class Model_DatacenterSensor {
 	}
 };
 
-class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Subtotals {
+class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Subtotals, IAbstractView_QuickSearch {
 	const DEFAULT_ID = 'datacenter_sensor';
 
 	function __construct() {
@@ -766,6 +766,153 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		}
 		
 		return $counts;
+	}
+	
+	function getQuickSearchFields() {
+		$fields = array(
+			'_fulltext' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_TEXT,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::NAME, 'match' => DevblocksSearchCriteria::OPTION_TEXT_PARTIAL),
+				),
+			'change' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_TEXT,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::METRIC_DELTA, 'match' => DevblocksSearchCriteria::OPTION_TEXT_PARTIAL),
+				),
+			'comments' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_FULLTEXT,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::FULLTEXT_COMMENT_CONTENT),
+				),
+			'fail.count' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_NUMBER,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::FAIL_COUNT),
+				),
+			'id' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_NUMBER,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::ID),
+				),
+			'isDisabled' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_BOOL,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::IS_DISABLED),
+				),
+			'metric' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_TEXT,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::METRIC, 'match' => DevblocksSearchCriteria::OPTION_TEXT_PARTIAL),
+				),
+			'metricType' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_TEXT,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::METRIC_TYPE, 'match' => DevblocksSearchCriteria::OPTION_TEXT_PARTIAL),
+				),
+			'name' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_TEXT,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::NAME, 'match' => DevblocksSearchCriteria::OPTION_TEXT_PARTIAL),
+				),
+			'output' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_TEXT,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::OUTPUT, 'match' => DevblocksSearchCriteria::OPTION_TEXT_PARTIAL),
+				),
+			'status' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_VIRTUAL,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::STATUS),
+					'examples' => array(
+						'OK',
+						'WARNING',
+						'CRITICAL',
+						'O',
+						'W,C',
+					),
+				),
+			'tag' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_TEXT,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::TAG, 'match' => DevblocksSearchCriteria::OPTION_TEXT_PARTIAL),
+				),
+			'type' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_TEXT,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::EXTENSION_ID, 'match' => DevblocksSearchCriteria::OPTION_TEXT_PARTIAL),
+				),
+			'updated' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_DATE,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::UPDATED),
+				),
+			'watchers' => 
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_WORKER,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::VIRTUAL_WATCHERS),
+				),
+		);
+		
+		// Add searchable custom fields
+		
+		$fields = self::_appendFieldsFromQuickSearchContext(CerberusContexts::CONTEXT_SENSOR, $fields, null);
+		
+		// Sort by keys
+		
+		ksort($fields);
+		
+		return $fields;
+	}	
+	
+	function getParamsFromQuickSearchFields($fields) {
+		$search_fields = $this->getQuickSearchFields();
+		$params = DevblocksSearchCriteria::getParamsFromQueryFields($fields, $search_fields);
+
+		// Handle virtual fields and overrides
+		if(is_array($fields))
+		foreach($fields as $k => $v) {
+			switch($k) {
+				case 'status':
+					$field_keys = array(
+						'status' => SearchFields_DatacenterSensor::STATUS,
+					);
+					
+					@$field_key = $field_keys[$k];
+					
+					$oper = DevblocksSearchCriteria::OPER_IN;
+					
+					$patterns = DevblocksPlatform::parseCsvString($v);
+					$values = array();
+					
+					foreach($patterns as $pattern) {
+						switch(substr(strtolower($pattern),0,1)) {
+							case 'o':
+								$values['O'] = true;
+								break;
+							case 'w':
+								$values['W'] = true;
+								break;
+							case 'c':
+								$values['C'] = true;
+								break;
+						}
+					}
+					
+					$param = new DevblocksSearchCriteria(
+						$field_key,
+						$oper,
+						array_keys($values)
+					);
+					$params[$field_key] = $param;					
+					break;
+			}
+		}
+		
+		$this->renderPage = 0;
+		$this->addParams($params, true);
+		
+		return $params;
 	}
 	
 	function render() {
