@@ -28,7 +28,7 @@ if(!isset($tables['datacenter_sensor'])) {
 			INDEX updated (updated)
 		) ENGINE=%s;
 	", APP_DB_ENGINE);
-	$db->Execute($sql);
+	$db->ExecuteMaster($sql);
 
 	$tables['datacenter_sensor'] = 'datacenter_sensor';
 }
@@ -39,7 +39,7 @@ if(!isset($tables['datacenter_sensor'])) {
 list($columns, $indexes) = $db->metaTable('datacenter_sensor');
 
 if(isset($columns['server_id']))
-	$db->Execute("ALTER TABLE datacenter_sensor DROP COLUMN server_id");
+	$db->ExecuteMaster("ALTER TABLE datacenter_sensor DROP COLUMN server_id");
 
 // ===========================================================================
 // Enable scheduled task and give defaults
