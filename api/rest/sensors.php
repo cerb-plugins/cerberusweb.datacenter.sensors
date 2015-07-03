@@ -73,6 +73,10 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	}
 
 	function translateToken($token, $type='dao') {
+		if('custom_' == substr($token, 0, 7) && in_array($type, array('search', 'subtotal'))) {
+			return 'cf_' . intval(substr($token, 7));
+		}
+		
 		$tokens = array();
 		
 		if('dao'==$type) {
