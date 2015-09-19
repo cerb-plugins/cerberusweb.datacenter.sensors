@@ -4,14 +4,14 @@
 	<name>Sensors</name>
 	<description>This plugin adds flexible Sensor objects that can be used for network and server monitoring, operational intelligence, etc.</description>
 	<author>Webgroup Media, LLC.</author>
-	<version>0.5.47</version>
+	<version>0.5.48</version>
 	<link>http://www.cerbweb.com/book/latest/plugins/cerberusweb.datacenter.sensors.html</link>
 	<image>plugin.png</image>
 
 	<!-- Requirements -->
 
 	<requires>
-		<app_version min="7.0.3" max="7.0.99" />
+		<app_version min="7.1" max="7.1.99" />
 		<php_extension name="curl" />
 	</requires>
 
@@ -76,6 +76,12 @@
 				<name>Context_Sensor</name>
 			</class>
 			<params>
+				<param key="names">
+					<value>
+						<data key="sensor" value="singular" />
+						<data key="sensors" value="plural" />
+					</value>
+				</param>
 				<param key="alias" value="sensor" />
 				<param key="dao_class" value="DAO_DatacenterSensor" />
 				<param key="view_class" value="View_DatacenterSensor" />

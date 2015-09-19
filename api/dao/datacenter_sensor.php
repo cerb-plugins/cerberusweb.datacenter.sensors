@@ -1054,7 +1054,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				$output = array();
 				
 				foreach($values as $v) {
-					$output[] = $options[$v];
+					$output[] = DevblocksPlatform::strEscapeHtml($options[$v]);
 				}
 				
 				echo implode(' or ', $output);
