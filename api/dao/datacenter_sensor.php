@@ -1225,6 +1225,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			'id' => $model->id,
 			'name' => $model->name,
 			'permalink' => $url,
+			'updated' => $model->updated,
 		);
 	}
 	
@@ -1435,7 +1436,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		return $view;
 	}
 	
-	function renderPeekPopup($context_id=0, $view_id='') {
+	function renderPeekPopup($context_id=0, $view_id='', $edit=false) {
 		$id = $context_id; // [TODO] Cleanup
 		
 		$tpl = DevblocksPlatform::getTemplateService();
