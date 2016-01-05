@@ -26,15 +26,7 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 		$stack = $request->path;
 		@array_shift($stack); // profiles
 		@array_shift($stack); // sensor
-		@$identifier = array_shift($stack);
-		
-		if(is_numeric($identifier)) {
-			$id = intval($identifier);
-		} elseif(preg_match("#.*?\-(\d+)$#", $identifier, $matches)) {
-			@$id = intval($matches[1]);
-		} else {
-			@$id = intval($identifier);
-		}
+		@$id = intval(array_shift($stack));
 		
 		if(null != ($sensor = DAO_DatacenterSensor::get($id)))
 			$tpl->assign('sensor', $sensor);
