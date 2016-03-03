@@ -29,9 +29,7 @@ abstract class AbstractEvent_Sensor extends Extension_DevblocksEvent {
 			// Pull the latest record
 			list($results) = DAO_DatacenterSensor::search(
 				array(),
-				array(
-					//new DevblocksSearchCriteria(SearchFields_Sensor::IS_CLOSED,'=',0),
-				),
+				array(),
 				10,
 				0,
 				SearchFields_DatacenterSensor::ID,

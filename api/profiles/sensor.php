@@ -41,45 +41,45 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 		$properties = array();
 		
 		$properties['status'] = array(
-			'label' => ucfirst($translate->_('common.status')),
+			'label' => mb_ucfirst($translate->_('common.status')),
 			'type' => Model_CustomField::TYPE_SINGLE_LINE,
 			'value' => $sensor->status,
 		);
 		
 		$properties['updated'] = array(
-			'label' => ucfirst($translate->_('common.updated')),
+			'label' => mb_ucfirst($translate->_('common.updated')),
 			'type' => Model_CustomField::TYPE_DATE,
 			'value' => $sensor->updated,
 		);
 		
 		if(null != ($mft_sensor_type = DevblocksPlatform::getExtension($sensor->extension_id, false))) {
 			$properties['type'] = array(
-				'label' => ucfirst($translate->_('common.type')),
+				'label' => mb_ucfirst($translate->_('common.type')),
 				'type' => Model_CustomField::TYPE_SINGLE_LINE,
 				'value' => $mft_sensor_type->name,
 			);
 		}
 		
 		$properties['tag'] = array(
-			'label' => ucfirst($translate->_('common.tag')),
+			'label' => mb_ucfirst($translate->_('common.tag')),
 			'type' => Model_CustomField::TYPE_SINGLE_LINE,
 			'value' => $sensor->tag,
 		);
 		
 		$properties['is_disabled'] = array(
-			'label' => ucfirst($translate->_('dao.datacenter_sensor.is_disabled')),
+			'label' => mb_ucfirst($translate->_('dao.datacenter_sensor.is_disabled')),
 			'type' => Model_CustomField::TYPE_CHECKBOX,
 			'value' => $sensor->is_disabled,
 		);
 		
 		$properties['fail_count'] = array(
-			'label' => ucfirst($translate->_('dao.datacenter_sensor.fail_count')),
+			'label' => mb_ucfirst($translate->_('dao.datacenter_sensor.fail_count')),
 			'type' => Model_CustomField::TYPE_NUMBER,
 			'value' => $sensor->fail_count,
 		);
 		
 		$properties['metric_type'] = array(
-			'label' => ucfirst($translate->_('dao.datacenter_sensor.metric_type')),
+			'label' => mb_ucfirst($translate->_('dao.datacenter_sensor.metric_type')),
 			'type' => Model_CustomField::TYPE_SINGLE_LINE,
 			'value' => $sensor->metric_type,
 		);
