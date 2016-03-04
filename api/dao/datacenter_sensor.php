@@ -108,7 +108,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 				
 				$delta = 0;
 				
-				if(!empty($metric)) {
+				if(!is_array($metric) && isset($metric['from']) && isset($metric['to'])) {
 					switch($model->metric_type) {
 						case 'updown':
 							$delta = (0 == strcasecmp($metric['to'],'UP')) ? 1 : -1;
