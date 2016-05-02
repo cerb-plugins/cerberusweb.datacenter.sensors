@@ -304,7 +304,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 	public static function getSearchQueryComponents($columns, $params, $sortBy=null, $sortAsc=null) {
 		$fields = SearchFields_DatacenterSensor::getFields();
 		
-		list($tables,$wheres) = parent::_parseSearchParams($params, $columns, $fields, $sortBy);
+		list($tables,$wheres) = parent::_parseSearchParams($params, $columns, $fields, $sortBy, array(), 'datacenter_sensor.id');
 		
 		$select_sql = sprintf("SELECT ".
 			"datacenter_sensor.id as %s, ".
