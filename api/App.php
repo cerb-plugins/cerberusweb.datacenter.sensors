@@ -46,17 +46,15 @@ class WgmDatacenterSensorsSensorHttp extends Extension_Sensor {
 			return FALSE;
 		}
 		
-		$ch = curl_init();
+		$ch = DevblocksPlatform::curlInit();
 		$success = false;
 		
 		@$url = $params['url'];
 		
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_HEADER, false);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_exec($ch);
+		DevblocksPlatform::curlExec($ch);
 		
 		$info = curl_getinfo($ch);
 		$status = $info['http_code'];
@@ -89,6 +87,7 @@ class WgmDatacenterSensorsSensorPort extends Extension_Sensor {
 	}
 	
 	function run($params, &$fields) {
+		// [TODO] cURL required when running fsockopen?
 		if(!extension_loaded('curl')) {
 			$error = "The 'curl' PHP extension is required.";
 			$fields[DAO_DatacenterSensor::STATUS] = 'C';
