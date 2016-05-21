@@ -304,7 +304,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 	public static function getSearchQueryComponents($columns, $params, $sortBy=null, $sortAsc=null) {
 		$fields = SearchFields_DatacenterSensor::getFields();
 		
-		list($tables,$wheres) = parent::_parseSearchParams($params, $columns, $fields, $sortBy, array(), 'datacenter_sensor.id');
+		list($tables,$wheres) = parent::_parseSearchParams($params, $columns, 'SearchFields_DatacenterSensor', $sortBy);
 		
 		$select_sql = sprintf("SELECT ".
 			"datacenter_sensor.id as %s, ".
@@ -339,19 +339,10 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			(isset($tables['context_link']) ? "INNER JOIN context_link ON (context_link.to_context = 'cerberusweb.contexts.datacenter.sensor' AND context_link.to_context_id = datacenter_sensor.id) " : " ")
 			;
 		
-		// Custom field joins
-		list($select_sql, $join_sql, $has_multiple_values) = self::_appendSelectJoinSqlForCustomFieldTables(
-			$tables,
-			$params,
-			'datacenter_sensor.id',
-			$select_sql,
-			$join_sql
-		);
-				
 		$where_sql = "".
 			(!empty($wheres) ? sprintf("WHERE %s ",implode(' AND ',$wheres)) : "WHERE 1 ");
 			
-		$sort_sql = self::_buildSortClause($sortBy, $sortAsc, $fields);
+		$sort_sql = self::_buildSortClause($sortBy, $sortAsc, $fields, $select_sql, 'SearchFields_DatacenterSensor');
 	
 		// Translate virtual fields
 		
@@ -388,39 +379,6 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		$param_key = $param->field;
 		settype($param_key, 'string');
 		switch($param_key) {
-			case SearchFields_DatacenterSensor::FULLTEXT_COMMENT_CONTENT:
-				$search = Extension_DevblocksSearchSchema::get(Search_CommentContent::ID);
-				$query = $search->getQueryFromParam($param);
-				
-				if(false === ($ids = $search->query($query, array('context_crc32' => sprintf("%u", crc32($from_context)))))) {
-					$args['where_sql'] .= 'AND 0 ';
-				
-				} elseif(is_array($ids)) {
-					$from_ids = DAO_Comment::getContextIdsByContextAndIds($from_context, $ids);
-					
-					$args['where_sql'] .= sprintf('AND %s IN (%s) ',
-						$from_index,
-						implode(', ', (!empty($from_ids) ? $from_ids : array(-1)))
-					);
-					
-				} elseif(is_string($ids)) {
-					$db = DevblocksPlatform::getDatabaseService();
-					$temp_table = sprintf("_tmp_%s", uniqid());
-					
-					$db->ExecuteSlave(sprintf("CREATE TEMPORARY TABLE %s (PRIMARY KEY (id)) SELECT DISTINCT context_id AS id FROM comment INNER JOIN %s ON (%s.id=comment.id)",
-						$temp_table,
-						$ids,
-						$ids
-					));
-					
-					$args['join_sql'] .= sprintf("INNER JOIN %s ON (%s.id=datacenter_sensor.id) ",
-						$temp_table,
-						$temp_table
-					);
-				}
-				
-				break;
-			
 			case SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK:
 				$args['has_multiple_values'] = true;
 				self::_searchComponentsVirtualContextLinks($param, $from_context, $from_index, $args['join_sql'], $args['where_sql']);
@@ -428,11 +386,6 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			
 			case SearchFields_DatacenterSensor::VIRTUAL_HAS_FIELDSET:
 				self::_searchComponentsVirtualHasFieldset($param, $from_context, $from_index, $args['join_sql'], $args['where_sql']);
-				break;
-				
-			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
-				$args['has_multiple_values'] = true;
-				self::_searchComponentsVirtualWatchers($param, $from_context, $from_index, $args['join_sql'], $args['where_sql'], $args['tables']);
 				break;
 		}
 		
@@ -508,7 +461,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 
 };
 
-class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
+class SearchFields_DatacenterSensor extends DevblocksSearchFields {
 	const ID = 'p_id';
 	const TAG = 'p_tag';
 	const NAME = 'p_name';
@@ -535,10 +488,54 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 	const VIRTUAL_HAS_FIELDSET = '*_has_fieldset';
 	const VIRTUAL_WATCHERS = '*_workers';
 	
+	static private $_fields = null;
+	
+	static function getPrimaryKey() {
+		return 'datacenter_sensor.id';
+	}
+	
+	static function getCustomFieldContextKeys() {
+		return array(
+			CerberusContexts::CONTEXT_SENSOR => new DevblocksSearchFieldContextKeys('datacenter_sensor.id', self::ID),
+		);
+	}
+	
+	static function getWhereSQL(DevblocksSearchCriteria $param) {
+		switch($param->field) {
+			case self::FULLTEXT_COMMENT_CONTENT:
+				return self::_getWhereSQLFromCommentFulltextField($param, Search_CommentContent::ID, CerberusContexts::CONTEXT_SENSOR, self::getPrimaryKey());
+				break;
+				
+			case self::VIRTUAL_WATCHERS:
+				return self::_getWhereSQLFromWatchersField($param, CerberusContexts::CONTEXT_SENSOR, self::getPrimaryKey());
+				break;
+				
+			default:
+				if('cf_' == substr($param->field, 0, 3)) {
+					return self::_getWhereSQLFromCustomFields($param);
+				} else {
+					return $param->getWhereSQL(self::getFields(), self::getPrimaryKey());
+				}
+				break;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * @return DevblocksSearchField[]
 	 */
 	static function getFields() {
+		if(is_null(self::$_fields))
+			self::$_fields = self::_getFields();
+		
+		return self::$_fields;
+	}
+	
+	/**
+	 * @return DevblocksSearchField[]
+	 */
+	static function _getFields() {
 		$translate = DevblocksPlatform::getTranslationService();
 		
 		$columns = array(
@@ -572,9 +569,7 @@ class SearchFields_DatacenterSensor implements IDevblocksSearchFields {
 		
 		// Custom fields with fieldsets
 		
-		$custom_columns = DevblocksSearchField::getCustomSearchFieldsByContexts(array(
-			CerberusContexts::CONTEXT_SENSOR,
-		));
+		$custom_columns = DevblocksSearchField::getCustomSearchFieldsByContexts(array_keys(self::getCustomFieldContextKeys()));
 		
 		if(is_array($custom_columns))
 			$columns = array_merge($columns, $custom_columns);
@@ -673,6 +668,9 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 			$this->renderSortAsc,
 			$this->renderTotal
 		);
+		
+		$this->_lazyLoadCustomFieldsIntoObjects($objects, 'SearchFields_DatacenterSensor');
+		
 		return $objects;
 	}
 	
@@ -782,7 +780,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		$search_fields = SearchFields_DatacenterSensor::getFields();
 		
 		$fields = array(
-			'_fulltext' => 
+			'text' => 
 				array(
 					'type' => DevblocksSearchCriteria::TYPE_TEXT,
 					'options' => array('param_key' => SearchFields_DatacenterSensor::NAME, 'match' => DevblocksSearchCriteria::OPTION_TEXT_PARTIAL),
@@ -840,8 +838,9 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 						'OK',
 						'WARNING',
 						'CRITICAL',
-						'O',
-						'W,C',
+						'o',
+						'[w,c]',
+						'![o]',
 					),
 				),
 			'tag' => 
@@ -892,53 +891,52 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		ksort($fields);
 		
 		return $fields;
-	}	
+	}
 	
-	function getParamsFromQuickSearchFields($fields) {
-		$search_fields = $this->getQuickSearchFields();
-		$params = DevblocksSearchCriteria::getParamsFromQueryFields($fields, $search_fields);
-
-		// Handle virtual fields and overrides
-		if(is_array($fields))
-		foreach($fields as $k => $v) {
-			switch($k) {
-				case 'status':
-					$field_keys = array(
-						'status' => SearchFields_DatacenterSensor::STATUS,
-					);
-					
-					@$field_key = $field_keys[$k];
-					
-					$oper = DevblocksSearchCriteria::OPER_IN;
-					
-					$patterns = DevblocksPlatform::parseCsvString($v);
-					$values = array();
-					
-					foreach($patterns as $pattern) {
-						switch(substr(strtolower($pattern),0,1)) {
-							case 'o':
-								$values['O'] = true;
-								break;
-							case 'w':
-								$values['W'] = true;
-								break;
-							case 'c':
-								$values['C'] = true;
-								break;
-						}
+	function getParamFromQuickSearchFieldTokens($field, $tokens) {
+		switch($field) {
+			case 'status':
+				$field_key = SearchFields_DatacenterSensor::STATUS;
+				$oper = null;
+				$patterns = array();
+				
+				CerbQuickSearchLexer::getOperArrayFromTokens($tokens, $oper, $patterns);
+				
+				$values = array();
+				
+				if(is_array($patterns))
+				foreach($patterns as $pattern) {
+					switch(substr(strtolower($pattern),0,1)) {
+						case 'o':
+							$values['O'] = true;
+							break;
+						case 'w':
+							$values['W'] = true;
+							break;
+						case 'c':
+							$values['C'] = true;
+							break;
 					}
-					
-					$param = new DevblocksSearchCriteria(
-						$field_key,
-						$oper,
-						array_keys($values)
-					);
-					$params[$field_key] = $param;
-					break;
-			}
+				}
+				
+				return new DevblocksSearchCriteria(
+					$field_key,
+					$oper,
+					array_keys($values)
+				);
+				break;
+		
+			case 'watchers':
+				return DevblocksSearchCriteria::getWatcherParamFromTokens(SearchFields_Domain::VIRTUAL_WATCHERS, $tokens);
+				break;
+				
+			default:
+				$search_fields = $this->getQuickSearchFields();
+				return DevblocksSearchCriteria::getParamFromQueryFieldTokens($field, $tokens, $search_fields);
+				break;
 		}
 		
-		return $params;
+		return false;
 	}
 	
 	function render() {
