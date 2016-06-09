@@ -722,6 +722,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 	function getSubtotalCounts($column) {
 		$counts = array();
 		$fields = $this->getFields();
+		$context = CerberusContexts::CONTEXT_SENSOR;
 
 		if(!isset($fields[$column]))
 			return array();
@@ -735,7 +736,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 					$label_map[$k] = $mft->name;
 				}
 				
-				$counts = $this->_getSubtotalCountForStringColumn('DAO_DatacenterSensor', $column, $label_map);
+				$counts = $this->_getSubtotalCountForStringColumn($context, $column, $label_map);
 				break;
 				
 			case SearchFields_DatacenterSensor::STATUS:
@@ -745,29 +746,29 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 					'C' => 'Critical',
 				);
 				
-				$counts = $this->_getSubtotalCountForStringColumn('DAO_DatacenterSensor', $column, $label_map, 'in', 'options[]');
+				$counts = $this->_getSubtotalCountForStringColumn($context, $column, $label_map, 'in', 'options[]');
 				break;
 				
 			case SearchFields_DatacenterSensor::IS_DISABLED:
-				$counts = $this->_getSubtotalCountForBooleanColumn('DAO_DatacenterSensor', $column);
+				$counts = $this->_getSubtotalCountForBooleanColumn($context, $column);
 				break;
 			
 			case SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK:
-				$counts = $this->_getSubtotalCountForContextLinkColumn('DAO_DatacenterSensor', CerberusContexts::CONTEXT_SENSOR, $column);
+				$counts = $this->_getSubtotalCountForContextLinkColumn($context, $column);
 				break;
 				
 			case SearchFields_DatacenterSensor::VIRTUAL_HAS_FIELDSET:
-				$counts = $this->_getSubtotalCountForHasFieldsetColumn('DAO_DatacenterSensor', CerberusContexts::CONTEXT_SENSOR, $column);
+				$counts = $this->_getSubtotalCountForHasFieldsetColumn($context, $column);
 				break;
 				
 			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
-				$counts = $this->_getSubtotalCountForWatcherColumn('DAO_DatacenterSensor', $column);
+				$counts = $this->_getSubtotalCountForWatcherColumn($context, $column);
 				break;
 				
 			default:
 				// Custom fields
 				if('cf_' == substr($column,0,3)) {
-					$counts = $this->_getSubtotalCountForCustomColumn('DAO_DatacenterSensor', $column, 'datacenter_sensor.id');
+					$counts = $this->_getSubtotalCountForCustomColumn($context, $column);
 				}
 				
 				break;
