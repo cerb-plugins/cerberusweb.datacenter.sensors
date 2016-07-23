@@ -1257,7 +1257,6 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		return $labels;
 	}
 	
-	// [TODO] Interface
 	function getDefaultProperties() {
 		return array(
 			'status',
