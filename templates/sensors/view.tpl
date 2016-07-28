@@ -1,8 +1,8 @@
 {$view_context = 'cerberusweb.contexts.datacenter.sensor'}
 {$view_fields = $view->getColumnsAvailable()}
-{assign var=results value=$view->getData()}
-{assign var=total value=$results[1]}
-{assign var=data value=$results[0]}
+{$results = $view->getData()}
+{$total = $results[1]}
+{$data = $results[0]}
 
 {include file="devblocks:cerberusweb.core::internal/views/view_marquee.tpl" view=$view}
 
@@ -67,26 +67,26 @@
 	{foreach from=$data item=result key=idx name=results}
 
 	{if $smarty.foreach.results.iteration % 2}
-		{assign var=tableRowClass value="even"}
+		{$tableRowClass = "even"}
 	{else}
-		{assign var=tableRowClass value="odd"}
+		{$tableRowClass = "odd"}
 	{/if}
 	<tbody style="cursor:pointer;">
 		<tr class="{$tableRowClass}">
-			<td align="center" nowrap="nowrap" style="padding:5px;">
+			<td data-column="*_watchers" align="center" nowrap="nowrap" style="padding:5px;">
 				{include file="devblocks:cerberusweb.core::internal/watchers/context_follow_button.tpl" context=$view_context context_id=$result.p_id}
 			</td>
 		{foreach from=$view->view_columns item=column name=columns}
 			{if substr($column,0,3)=="cf_"}
 				{include file="devblocks:cerberusweb.core::internal/custom_fields/view/cell_renderer.tpl"}
 			{elseif $column=="p_name"}
-				<td>
+				<td data-column="{$column}">
 					<input type="checkbox" name="row_id[]" value="{$result.p_id}" style="display:none;">
 					<a href="{devblocks_url}c=profiles&type=sensor&id={$result.p_id}{/devblocks_url}-{$result.p_name|devblocks_permalink}" class="subject">{$result.p_name}</a>
 					<button type="button" class="peek" onclick="genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={$view_context}&context_id={$result.p_id}&view_id={$view->id}',null,false,'500');"><span class="glyphicons glyphicons-new-window-alt"></span></button>
 				</td>
 			{elseif $column=="p_status"}
-				<td>
+				<td data-column="{$column}">
 					<div class="badge badge-lightgray">
 					{if $result.$column == "W"}
 						<span style="color:rgb(204,154,0);font-weight:bold;">Warning</span>
@@ -98,16 +98,16 @@
 					</div>
 				</td>
 			{elseif $column=="p_extension_id"}
-				<td>
+				<td data-column="{$column}">
 					{if isset($sensor_manifests.{$result.$column})}
 						{$sensor = $sensor_manifests.{$result.$column}}
 						{$sensor->name}
 					{/if}
 				</td>
 			{elseif $column=="p_updated"}
-				<td><abbr title="{$result.$column|devblocks_date}">{$result.$column|devblocks_prettytime}</abbr>&nbsp;</td>
+				<td data-column="{$column}"><abbr title="{$result.$column|devblocks_date}">{$result.$column|devblocks_prettytime}</abbr>&nbsp;</td>
 			{elseif $column == "p_metric" || $column == "p_output"}
-				<td>
+				<td data-column="{$column}">
 					{if $result.p_status == "W"}
 						<span style="color:rgb(204,154,0);">
 					{elseif $result.p_status == "C"}
@@ -119,7 +119,7 @@
 					</span>
 				</td>
 			{elseif $column == "p_metric_delta"}
-				<td>
+				<td data-column="{$column}">
 					{if $result.$column == 0}
 					{elseif $result.$column < 0}
 						{$result.$column}{if $result.p_metric_type=='percent'}%{/if}
@@ -128,7 +128,7 @@
 					{/if}
 				</td>
 			{elseif $column == "p_is_disabled"}
-				<td>
+				<td data-column="{$column}">
 					{if $result.$column}
 						{'common.no'|devblocks_translate|capitalize}
 					{else}
@@ -136,7 +136,7 @@
 					{/if}
 				</td>
 			{else}
-				<td>{$result.$column}</td>
+				<td data-column="{$column}">{$result.$column}</td>
 			{/if}
 		{/foreach}
 		</tr>
