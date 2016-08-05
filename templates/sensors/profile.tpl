@@ -117,7 +117,7 @@ $(function() {
 	var tabs = $("#profileSensorTabs").tabs(tabOptions);
 	
 	$('#btnDatacenterSensorEdit').bind('click', function() {
-		$popup = genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={$page_context}&context_id={$page_context_id}',null,false,'550');
+		$popup = genericAjaxPopup('peek','c=internal&a=showPeekPopup&context={$page_context}&context_id={$page_context_id}',null,false,'50%');
 		$popup.one('datacenter_sensor_save', function(event) {
 			event.stopPropagation();
 			document.location.href = '{devblocks_url}c=profiles&type=sensor&id={$page_context_id}{/devblocks_url}-{$sensor->name|devblocks_permalink}';
