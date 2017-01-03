@@ -211,22 +211,10 @@ class Page_Sensors extends CerberusPageExtension {
 			} else { // create
 				$id = DAO_DatacenterSensor::create($fields);
 				
-				// Watchers
-				@$add_watcher_ids = DevblocksPlatform::sanitizeArray(DevblocksPlatform::importGPC($_REQUEST['add_watcher_ids'],'array',array()),'integer',array('unique','nonzero'));
-				if(!empty($add_watcher_ids))
-					CerberusContexts::addWatchers('cerberusweb.contexts.datacenter.sensor', $id, $add_watcher_ids);
-				
 				// View marquee
 				if(!empty($id) && !empty($view_id)) {
 					C4_AbstractView::setMarqueeContextCreated($view_id, 'cerberusweb.contexts.datacenter.sensor', $id);
 				}
-			}
-			
-			// Context Link (if given)
-			@$link_context = DevblocksPlatform::importGPC($_REQUEST['link_context'],'string','');
-			@$link_context_id = DevblocksPlatform::importGPC($_REQUEST['link_context_id'],'integer','');
-			if(!empty($id) && !empty($link_context) && !empty($link_context_id)) {
-				DAO_ContextLink::setLink(CerberusContexts::CONTEXT_SENSOR, $id, $link_context, $link_context_id);
 			}
 			
 			// Custom field saves

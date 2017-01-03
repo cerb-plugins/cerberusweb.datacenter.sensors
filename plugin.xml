@@ -4,21 +4,21 @@
 	<name>Sensors</name>
 	<description>This plugin adds flexible Sensor objects that can be used for network and server monitoring, operational intelligence, etc.</description>
 	<author>Webgroup Media, LLC.</author>
-	<version>0.5.59</version>
+	<version>0.5.60</version>
 	<link>http://www.cerbweb.com/book/latest/plugins/cerberusweb.datacenter.sensors.html</link>
 	<image>plugin.png</image>
 
 	<!-- Requirements -->
 
 	<requires>
-		<app_version min="7.2" max="7.2.99" />
+		<app_version min="7.3" max="7.3.99" />
 		<php_extension name="curl" />
 	</requires>
 
 	<!-- Plugin Dependencies -->
 	
 	<dependencies>
-		<require plugin_id="cerberusweb.core" version="7.0.0" />
+		<require plugin_id="cerberusweb.core" version="7.3.0" />
 	</dependencies>
 
 	<!-- Patches -->
@@ -34,7 +34,7 @@
 			<class name="Extension_Sensor" />
 		</file>
 		
-		<file path="api/dao/datacenter_sensor.php">
+		<file path="api/dao/sensor.php">
 			<class name="Context_Sensor" />
 			<class name="DAO_DatacenterSensor" />
 			<class name="Model_DatacenterSensor" />
@@ -72,7 +72,7 @@
 			<id>cerberusweb.contexts.datacenter.sensor</id>
 			<name>Sensor</name>
 			<class>
-				<file>api/dao/datacenter_sensor.php</file>
+				<file>api/dao/sensor.php</file>
 				<name>Context_Sensor</name>
 			</class>
 			<params>
@@ -89,8 +89,8 @@
 					<value>
 						<data key="custom_fields" />
 						<data key="create" />
-						<data key="find" />
-						<!--<data key="snippets" />-->
+						<data key="links" />
+						<data key="search" />
 						<data key="va_variable" />
 						<data key="workspace" />
 					</value>

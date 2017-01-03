@@ -335,9 +335,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 				SearchFields_DatacenterSensor::OUTPUT
 			);
 			
-		$join_sql = "FROM datacenter_sensor ".
-			(isset($tables['context_link']) ? "INNER JOIN context_link ON (context_link.to_context = 'cerberusweb.contexts.datacenter.sensor' AND context_link.to_context_id = datacenter_sensor.id) " : " ")
-			;
+		$join_sql = "FROM datacenter_sensor ";
 		
 		$where_sql = "".
 			(!empty($wheres) ? sprintf("WHERE %s ",implode(' AND ',$wheres)) : "WHERE 1 ");
@@ -350,7 +348,6 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			'join_sql' => &$join_sql,
 			'where_sql' => &$where_sql,
 			'tables' => &$tables,
-			'has_multiple_values' => &$has_multiple_values
 		);
 		
 		array_walk_recursive(
@@ -364,7 +361,6 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			'select' => $select_sql,
 			'join' => $join_sql,
 			'where' => $where_sql,
-			'has_multiple_values' => $has_multiple_values,
 			'sort' => $sort_sql,
 		);
 	}
@@ -379,11 +375,6 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		$param_key = $param->field;
 		settype($param_key, 'string');
 		switch($param_key) {
-			case SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK:
-				$args['has_multiple_values'] = true;
-				self::_searchComponentsVirtualContextLinks($param, $from_context, $from_index, $args['join_sql'], $args['where_sql']);
-				break;
-			
 			case SearchFields_DatacenterSensor::VIRTUAL_HAS_FIELDSET:
 				self::_searchComponentsVirtualHasFieldset($param, $from_context, $from_index, $args['join_sql'], $args['where_sql']);
 				break;
@@ -412,14 +403,12 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		$select_sql = $query_parts['select'];
 		$join_sql = $query_parts['join'];
 		$where_sql = $query_parts['where'];
-		$has_multiple_values = $query_parts['has_multiple_values'];
 		$sort_sql = $query_parts['sort'];
 		
 		$sql =
 			$select_sql.
 			$join_sql.
 			$where_sql.
-			($has_multiple_values ? 'GROUP BY datacenter_sensor.id ' : '').
 			$sort_sql;
 			
 		if($limit > 0) {
@@ -447,7 +436,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			// We can skip counting if we have a less-than-full single page
 			if(!(0 == $page && $total < $limit)) {
 				$count_sql =
-					($has_multiple_values ? "SELECT COUNT(DISTINCT datacenter_sensor.id) " : "SELECT COUNT(datacenter_sensor.id) ").
+					"SELECT COUNT(datacenter_sensor.id) ".
 					$join_sql.
 					$where_sql;
 				$total = $db->GetOneSlave($count_sql);
@@ -479,10 +468,6 @@ class SearchFields_DatacenterSensor extends DevblocksSearchFields {
 	// Comment Content
 	const FULLTEXT_COMMENT_CONTENT = 'ftcc_content';
 
-	// Context links
-	const CONTEXT_LINK = 'cl_context_from';
-	const CONTEXT_LINK_ID = 'cl_context_from_id';
-	
 	// Virtuals
 	const VIRTUAL_CONTEXT_LINK = '*_context_link';
 	const VIRTUAL_HAS_FIELDSET = '*_has_fieldset';
@@ -504,6 +489,10 @@ class SearchFields_DatacenterSensor extends DevblocksSearchFields {
 		switch($param->field) {
 			case self::FULLTEXT_COMMENT_CONTENT:
 				return self::_getWhereSQLFromCommentFulltextField($param, Search_CommentContent::ID, CerberusContexts::CONTEXT_SENSOR, self::getPrimaryKey());
+				break;
+				
+			case self::VIRTUAL_CONTEXT_LINK:
+				return self::_getWhereSQLFromContextLinksField($param, CerberusContexts::CONTEXT_SENSOR, self::getPrimaryKey());
 				break;
 				
 			case self::VIRTUAL_WATCHERS:
@@ -552,9 +541,6 @@ class SearchFields_DatacenterSensor extends DevblocksSearchFields {
 			self::METRIC_TYPE => new DevblocksSearchField(self::METRIC_TYPE, 'datacenter_sensor', 'metric_type', $translate->_('dao.datacenter_sensor.metric_type'), null, true),
 			self::METRIC_DELTA => new DevblocksSearchField(self::METRIC_DELTA, 'datacenter_sensor', 'metric_delta', $translate->_('dao.datacenter_sensor.metric_delta'), Model_CustomField::TYPE_NUMBER, true),
 			self::OUTPUT => new DevblocksSearchField(self::OUTPUT, 'datacenter_sensor', 'output', $translate->_('dao.datacenter_sensor.output'), Model_CustomField::TYPE_SINGLE_LINE, true),
-			
-			self::CONTEXT_LINK => new DevblocksSearchField(self::CONTEXT_LINK, 'context_link', 'from_context', null, null, false),
-			self::CONTEXT_LINK_ID => new DevblocksSearchField(self::CONTEXT_LINK_ID, 'context_link', 'from_context_id', null, null, false),
 			
 			self::VIRTUAL_CONTEXT_LINK => new DevblocksSearchField(self::VIRTUAL_CONTEXT_LINK, '*', 'context_link', $translate->_('common.links'), null, false),
 			self::VIRTUAL_HAS_FIELDSET => new DevblocksSearchField(self::VIRTUAL_HAS_FIELDSET, '*', 'has_fieldset', $translate->_('common.fieldset'), null, false),
@@ -639,8 +625,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		);
 		
 		$this->addColumnsHidden(array(
-			SearchFields_DatacenterSensor::CONTEXT_LINK,
-			SearchFields_DatacenterSensor::CONTEXT_LINK_ID,
 			SearchFields_DatacenterSensor::ID,
 			SearchFields_DatacenterSensor::PARAMS_JSON,
 			SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK,
@@ -649,8 +633,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		));
 		
 		$this->addParamsHidden(array(
-			SearchFields_DatacenterSensor::CONTEXT_LINK,
-			SearchFields_DatacenterSensor::CONTEXT_LINK_ID,
 			SearchFields_DatacenterSensor::ID,
 			SearchFields_DatacenterSensor::PARAMS_JSON,
 		));
@@ -805,6 +787,9 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				array(
 					'type' => DevblocksSearchCriteria::TYPE_NUMBER,
 					'options' => array('param_key' => SearchFields_DatacenterSensor::ID),
+					'examples' => [
+						['type' => 'chooser', 'context' => CerberusContexts::CONTEXT_SENSOR, 'q' => ''],
+					]
 				),
 			'isDisabled' => 
 				array(
@@ -865,6 +850,10 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 					'options' => array('param_key' => SearchFields_DatacenterSensor::VIRTUAL_WATCHERS),
 				),
 		);
+		
+		// Add quick search links
+		
+		$fields = self::_appendVirtualFiltersFromQuickSearchContexts('links', $fields, 'links');
 		
 		// Add searchable custom fields
 		
@@ -932,6 +921,9 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				break;
 				
 			default:
+				if($field == 'links' || substr($field, 0, 6) == 'links.')
+					return DevblocksSearchCriteria::getContextLinksParamFromTokens($field, $tokens);
+				
 				$search_fields = $this->getQuickSearchFields();
 				return DevblocksSearchCriteria::getParamFromQueryFieldTokens($field, $tokens, $search_fields);
 				break;
@@ -1142,6 +1134,28 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 class Context_Sensor extends Extension_DevblocksContext implements IDevblocksContextProfile, IDevblocksContextPeek {
 	const ID = CerberusContexts::CONTEXT_SENSOR;
 	
+	static function isReadableByActor($models, $actor) {
+		// Everyone can view
+		return CerberusContexts::allowEverything($models);
+	}
+	
+	static function isWriteableByActor($models, $actor) {
+		// Everyone can modify
+		return CerberusContexts::allowEverything($models);
+	}
+	
+	function getDaoClass() {
+		return 'DAO_DatacenterSensor';
+	}
+	
+	function getSearchClass() {
+		return 'SearchFields_DatacenterSensor';
+	}
+	
+	function getViewClass() {
+		return 'View_DatacenterSensor';
+	}
+	
 	function getRandom() {
 		return DAO_DatacenterSensor::random();
 	}
@@ -1304,10 +1318,15 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		
 		if(!$is_loaded) {
 			$labels = array();
-			CerberusContexts::getContext($context, $context_id, $labels, $values, null, true);
+			CerberusContexts::getContext($context, $context_id, $labels, $values, null, true, true);
 		}
 		
 		switch($token) {
+			case 'links':
+				$links = $this->_lazyLoadLinks($context, $context_id);
+				$values = array_merge($values, $fields);
+				break;
+			
 			case 'watchers':
 				$watchers = array(
 					$token => CerberusContexts::getWatchers($context, $context_id, true),
@@ -1316,7 +1335,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 				break;
 				
 			default:
-				if(substr($token,0,7) == 'custom_') {
+				if(DevblocksPlatform::strStartsWith($token, 'custom_')) {
 					$fields = $this->_lazyLoadCustomFields($token, $context, $context_id);
 					$values = array_merge($values, $fields);
 				}
@@ -1367,8 +1386,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		
 		if(!empty($context) && !empty($context_id)) {
 			$params_req = array(
-				new DevblocksSearchCriteria(SearchFields_DatacenterSensor::CONTEXT_LINK,'=',$context),
-				new DevblocksSearchCriteria(SearchFields_DatacenterSensor::CONTEXT_LINK_ID,'=',$context_id),
+				new DevblocksSearchCriteria(SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK,'in',array($context.':'.$context_id)),
 			);
 		}
 		

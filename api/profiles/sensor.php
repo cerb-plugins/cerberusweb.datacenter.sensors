@@ -47,7 +47,7 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 		);
 		
 		$properties['updated'] = array(
-			'label' => mb_ucfirst($translate->_('common.updated')),
+			'label' => DevblocksPlatform::translateCapitalized('common.updated'),
 			'type' => Model_CustomField::TYPE_DATE,
 			'value' => $sensor->updated,
 		);
@@ -107,7 +107,7 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 					DAO_ContextLink::getContextLinkCounts(
 						CerberusContexts::CONTEXT_SENSOR,
 						$sensor->id,
-						array(CerberusContexts::CONTEXT_WORKER, CerberusContexts::CONTEXT_CUSTOM_FIELDSET)
+						array(CerberusContexts::CONTEXT_CUSTOM_FIELDSET)
 					),
 			),
 		);
