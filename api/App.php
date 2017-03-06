@@ -188,7 +188,7 @@ class Page_Sensors extends CerberusPageExtension {
 			DAO_DatacenterSensor::delete($id);
 			
 		} else {
-			$tag = strtolower($tag);
+			$tag = DevblocksPlatform::strLower($tag);
 			
 			// Make sure the tag is unique
 			if(!empty($tag)) {

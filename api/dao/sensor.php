@@ -896,7 +896,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				
 				if(is_array($patterns))
 				foreach($patterns as $pattern) {
-					switch(substr(strtolower($pattern),0,1)) {
+					switch(substr(DevblocksPlatform::strLower($pattern),0,1)) {
 						case 'o':
 							$values['O'] = true;
 							break;
