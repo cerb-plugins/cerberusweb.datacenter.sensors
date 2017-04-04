@@ -118,14 +118,6 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 		
 		$tpl->assign('properties', $properties);
 		
-		// Macros
-		
-		$macros = DAO_TriggerEvent::getReadableByActor(
-			$active_worker,
-			'event.macro.sensor'
-		);
-		$tpl->assign('macros', $macros);
-		
 		// Tabs
 		$tab_manifests = Extension_ContextProfileTab::getExtensions(false, CerberusContexts::CONTEXT_SENSOR);
 		$tpl->assign('tab_manifests', $tab_manifests);
