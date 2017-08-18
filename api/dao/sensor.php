@@ -1,21 +1,106 @@
 <?php
 class DAO_DatacenterSensor extends Cerb_ORMHelper {
-	const ID = 'id';
-	const TAG = 'tag';
-	const NAME = 'name';
-	const STATUS = 'status';
 	const EXTENSION_ID = 'extension_id';
-	const PARAMS_JSON = 'params_json';
-	const UPDATED = 'updated';
 	const FAIL_COUNT = 'fail_count';
+	const ID = 'id';
 	const IS_DISABLED = 'is_disabled';
 	const METRIC = 'metric';
-	const METRIC_TYPE = 'metric_type';
 	const METRIC_DELTA = 'metric_delta';
+	const METRIC_TYPE = 'metric_type';
+	const NAME = 'name';
 	const OUTPUT = 'output';
+	const PARAMS_JSON = 'params_json';
+	const STATUS = 'status';
+	const TAG = 'tag';
+	const UPDATED = 'updated';
+	
+	private function __construct() {}
 
+	static function getFields() {
+		$validation = DevblocksPlatform::services()->validation();
+		
+		// varchar(255)
+		$validation
+			->addField(self::EXTENSION_ID)
+			->string()
+			->setMaxLength(255)
+			;
+		// tinyint(4)
+		$validation
+			->addField(self::FAIL_COUNT)
+			->uint(1)
+			;
+		// int(10) unsigned
+		$validation
+			->addField(self::ID)
+			->id()
+			->setEditable(false)
+			;
+		// tinyint(1)
+		$validation
+			->addField(self::IS_DISABLED)
+			->bit()
+			;
+		// text
+		$validation
+			->addField(self::METRIC)
+			->string()
+			->setMaxLength(65535)
+			;
+		// varchar(64)
+		$validation
+			->addField(self::METRIC_DELTA)
+			->string()
+			->setMaxLength(64)
+			;
+		// varchar(32)
+		$validation
+			->addField(self::METRIC_TYPE)
+			->string()
+			->setMaxLength(32)
+			;
+		// varchar(255)
+		$validation
+			->addField(self::NAME)
+			->string()
+			->setMaxLength(255)
+			->setRequired(true)
+			;
+		// text
+		$validation
+			->addField(self::OUTPUT)
+			->string()
+			->setMaxLength(65535)
+			;
+		// text
+		$validation
+			->addField(self::PARAMS_JSON)
+			->string()
+			->setMaxLength(65535)
+			;
+		// char(1)
+		$validation
+			->addField(self::STATUS)
+			->string()
+			->setMaxLength(1)
+			;
+		// varchar(255)
+		$validation
+			->addField(self::TAG)
+			->string()
+			->setMaxLength(255)
+			;
+		// int(10) unsigned
+		$validation
+			->addField(self::UPDATED)
+			->timestamp()
+			;
+
+		return $validation->getFields();
+	}
+	
 	static function create($fields) {
-		$db = DevblocksPlatform::getDatabaseService();
+		$db = DevblocksPlatform::services()->database();
 		
 		$sql = "INSERT INTO datacenter_sensor () VALUES ()";
 		$db->ExecuteMaster($sql);
@@ -51,7 +136,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 				self::_processUpdateEvents($batch_ids, $fields);
 				
 				// Trigger an event about the changes
-				$eventMgr = DevblocksPlatform::getEventService();
+				$eventMgr = DevblocksPlatform::services()->event();
 				$eventMgr->trigger(
 					new Model_DevblocksEvent(
 						'dao.datacenter.sensor.update',
@@ -88,7 +173,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		if(false == ($models = DAO_DatacenterSensor::getIds($ids)))
 			return;
 		
-		$db = DevblocksPlatform::getDatabaseService();
+		$db = DevblocksPlatform::services()->database();
 		
 		foreach($models as $id => $model) {
 			if(!isset($before_models[$id]))
@@ -181,7 +266,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 	 * @return Model_DatacenterSensor[]
 	 */
 	static function getWhere($where=null, $sortBy=null, $sortAsc=true, $limit=null) {
-		$db = DevblocksPlatform::getDatabaseService();
+		$db = DevblocksPlatform::services()->database();
 
 		list($where_sql, $sort_sql, $limit_sql) = self::_getWhereSQL($where, $sortBy, $sortAsc, $limit);
 		
@@ -271,7 +356,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 	
 	static function delete($ids) {
 		if(!is_array($ids)) $ids = array($ids);
-		$db = DevblocksPlatform::getDatabaseService();
+		$db = DevblocksPlatform::services()->database();
 		
 		if(empty($ids))
 			return;
@@ -282,7 +367,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		
 		// Fire event
 		/*
-		$eventMgr = DevblocksPlatform::getEventService();
+		$eventMgr = DevblocksPlatform::services()->event();
 		$eventMgr->trigger(
 			new Model_DevblocksEvent(
 				'context.delete',
@@ -395,7 +480,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 	 * @return array
 	 */
 	static function search($columns, $params, $limit=10, $page=0, $sortBy=null, $sortAsc=null, $withCounts=true) {
-		$db = DevblocksPlatform::getDatabaseService();
+		$db = DevblocksPlatform::services()->database();
 		
 		// Build search queries
 		$query_parts = self::getSearchQueryComponents($columns,$params,$sortBy,$sortAsc);
@@ -935,7 +1020,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 	function render() {
 		$this->_sanitize();
 		
-		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl = DevblocksPlatform::services()->template();
 		$tpl->assign('id', $this->id);
 		$tpl->assign('view', $this);
 
@@ -970,7 +1055,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 	}
 	
 	function renderCriteria($field) {
-		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl = DevblocksPlatform::services()->template();
 		$tpl->assign('id', $this->id);
 
 		switch($field) {
@@ -1164,7 +1249,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		if(empty($context_id))
 			return '';
 	
-		$url_writer = DevblocksPlatform::getUrlService();
+		$url_writer = DevblocksPlatform::services()->url();
 		$url = $url_writer->writeNoProxy('c=profiles&type=sensor&id='.$context_id, true);
 		return $url;
 	}
@@ -1299,11 +1384,25 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			$token_values['updated'] = $object->updated;
 			
 			// URL
-			$url_writer = DevblocksPlatform::getUrlService();
+			$url_writer = DevblocksPlatform::services()->url();
 			//$token_values['record_url'] = $url_writer->writeNoProxy(sprintf("c=example.object&id=%d-%s",$object->id, DevblocksPlatform::strToPermalink($object->name)), true);
 		}
 		
 		return true;
+	}
+	
+	function getKeyToDaoFieldMap() {
+		return [
+			'id' => DAO_DatacenterSensor::ID,
+			'metric' => DAO_DatacenterSensor::METRIC,
+			'metric_type' => DAO_DatacenterSensor::METRIC_TYPE,
+			'metric_delta' => DAO_DatacenterSensor::METRIC_DELTA,
+			'name' => DAO_DatacenterSensor::NAME,
+			'output' => DAO_DatacenterSensor::OUTPUT,
+			'status' => DAO_DatacenterSensor::STATUS,
+			'tag' => DAO_DatacenterSensor::TAG,
+			'updated' => DAO_DatacenterSensor::UPDATED,
+		];
 	}
 
 	function lazyLoadContextValues($token, $dictionary) {
@@ -1399,7 +1498,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 	function renderPeekPopup($context_id=0, $view_id='', $edit=false) {
 		$id = $context_id; // [TODO] Cleanup
 		
-		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl = DevblocksPlatform::services()->template();
 		$tpl->assign('view_id', $view_id);
 		
 		if(null != ($model = DAO_DatacenterSensor::get($id))) {

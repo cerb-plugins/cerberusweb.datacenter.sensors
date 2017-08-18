@@ -62,7 +62,13 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	
 	function deleteAction($stack) {
 		$id = array_shift($stack);
+		
+		$worker = CerberusApplication::getActiveWorker();
 
+		// ACL
+		if(!$worker->hasPriv('contexts.cerberusweb.contexts.datacenter.sensor.delete'))
+			$this->error(self::ERRNO_ACL);
+		
 		if(null == ($sensor = DAO_DatacenterSensor::get($id)))
 			$this->error(self::ERRNO_CUSTOM, sprintf("Invalid sensor ID %d", $id));
 
@@ -285,10 +291,6 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 	function postSearch() {
 		$worker = CerberusApplication::getActiveWorker();
 		
-		// ACL
-//		if(!$worker->hasPriv('core.addybook'))
-//			$this->error(self::ERRNO_ACL);
-
 		$container = $this->_handlePostSearch();
 		
 		$this->success($container);
@@ -302,8 +304,8 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 			$this->error(self::ERRNO_CUSTOM, sprintf("Invalid sensor ID '%d'", $id));
 			
 		// ACL
-		//if(!($worker->hasPriv('core.tasks.actions.update_all') || $sensor->worker_id == $worker->id))
-		//	$this->error(self::ERRNO_ACL);
+		if(!$worker->hasPriv('contexts.cerberusweb.contexts.datacenter.sensor.update'))
+			$this->error(self::ERRNO_ACL);
 			
 		$putfields = array(
 			'metric' => 'string',
@@ -348,8 +350,8 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 		$worker = CerberusApplication::getActiveWorker();
 		
 		// ACL
-		//if(!$worker->hasPriv('core.tasks.actions.create'))
-		//	$this->error(self::ERRNO_ACL);
+		if(!$worker->hasPriv('contexts.cerberusweb.contexts.datacenter.sensor.create'))
+			$this->error(self::ERRNO_ACL);
 		
 		$postfields = array(
 			'metric' => 'string',

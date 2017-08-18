@@ -20,7 +20,7 @@ abstract class Extension_Sensor extends DevblocksExtension {
 
 class WgmDatacenterSensorsSensorExternal extends Extension_Sensor {
 	function renderConfig($params=array()) {
-		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl = DevblocksPlatform::services()->template();
 		$tpl->assign('params', $params);
 		$tpl->display('devblocks:cerberusweb.datacenter.sensors::sensors/external/config.tpl');
 	}
@@ -32,7 +32,7 @@ class WgmDatacenterSensorsSensorExternal extends Extension_Sensor {
 
 class WgmDatacenterSensorsSensorHttp extends Extension_Sensor {
 	function renderConfig($params=array()) {
-		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl = DevblocksPlatform::services()->template();
 		$tpl->assign('params', $params);
 		$tpl->display('devblocks:cerberusweb.datacenter.sensors::sensors/http/config.tpl');
 	}
@@ -81,7 +81,7 @@ class WgmDatacenterSensorsSensorHttp extends Extension_Sensor {
 
 class WgmDatacenterSensorsSensorPort extends Extension_Sensor {
 	function renderConfig($params=array()) {
-		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl = DevblocksPlatform::services()->template();
 		$tpl->assign('params', $params);
 		$tpl->display('devblocks:cerberusweb.datacenter.sensors::sensors/port/config.tpl');
 	}
@@ -124,7 +124,7 @@ class WgmDatacenterSensorsSensorPort extends Extension_Sensor {
 if (class_exists('CerberusCronPageExtension')):
 class Cron_WgmDatacenterSensors extends CerberusCronPageExtension {
 	public function run() {
-		$logger = DevblocksPlatform::getConsoleLog("Sensors");
+		$logger = DevblocksPlatform::services()->log("Sensors");
 		$logger->info("Started");
 
 		// Only non-disabled sensors that need to run, up to a max number, longest since updated, not external
@@ -148,7 +148,7 @@ class Cron_WgmDatacenterSensors extends CerberusCronPageExtension {
 	}
 	
 	public function configure($instance) {
-		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl = DevblocksPlatform::services()->template();
 		$tpl->cache_lifetime = "0";
 		//$tpl->display('devblocks:cerberusweb.datacenter.sensors::cron/config.tpl');
 	}
@@ -242,7 +242,7 @@ class Page_Sensors extends CerberusPageExtension {
 
 class WorkspaceWidgetDatasource_Sensor extends Extension_WorkspaceWidgetDatasource {
 	function renderConfig(Model_WorkspaceWidget $widget, $params=array(), $params_prefix=null) {
-		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl = DevblocksPlatform::services()->template();
 		
 		$tpl->assign('widget', $widget);
 		$tpl->assign('params', $params);
