@@ -1,3 +1,4 @@
+{$peek_context = CerberusContexts::CONTEXT_SENSOR}
 <form action="{devblocks_url}{/devblocks_url}" method="post" id="frmSensor">
 <input type="hidden" name="c" value="datacenter.sensors">
 <input type="hidden" name="a" value="savePeek">
@@ -74,7 +75,7 @@
 </fieldset>
 {/if}
 
-{include file="devblocks:cerberusweb.core::internal/custom_fieldsets/peek_custom_fieldsets.tpl" context=CerberusContexts::CONTEXT_SENSOR context_id=$model->id}
+{include file="devblocks:cerberusweb.core::internal/custom_fieldsets/peek_custom_fieldsets.tpl" context=$peek_context context_id=$model->id}
 
 {* Comment *}
 {if !empty($last_comment)}
@@ -83,21 +84,22 @@
 </div>
 {/if}
 
-<button type="button" onclick="genericAjaxPopupPostCloseReloadView(null,'frmSensor','{$view_id}', false, 'datacenter_sensor_save');"><span class="glyphicons glyphicons-circle-ok" style="color:rgb(0,180,0);"></span> {'common.save_changes'|devblocks_translate|capitalize}</button>
-{if $model->id && $active_worker->is_superuser}<button type="button" onclick="if(confirm('Permanently delete this sensor?')) { this.form.do_delete.value='1';genericAjaxPopupPostCloseReloadView(null,'frmSensor','{$view_id}'); } "><span class="glyphicons glyphicons-circle-minus" style="color:rgb(200,0,0);"></span> {'common.delete'|devblocks_translate|capitalize}</button>{/if}
+{if (!$model->id && $active_worker->hasPriv("contexts.{$peek_context}.create")) || ($model->id && $active_worker->hasPriv("contexts.{$peek_context}.update"))}<button type="button" onclick="genericAjaxPopupPostCloseReloadView(null,'frmSensor','{$view_id}', false, 'datacenter_sensor_save');"><span class="glyphicons glyphicons-circle-ok" style="color:rgb(0,180,0);"></span> {'common.save_changes'|devblocks_translate|capitalize}</button>{/if}
+{if $model->id && $active_worker->hasPriv("contexts.{$peek_context}.delete")}<button type="button" onclick="if(confirm('Permanently delete this sensor?')) { this.form.do_delete.value='1';genericAjaxPopupPostCloseReloadView(null,'frmSensor','{$view_id}'); } "><span class="glyphicons glyphicons-circle-minus" style="color:rgb(200,0,0);"></span> {'common.delete'|devblocks_translate|capitalize}</button>{/if}
 
 </form>
 
 <script type="text/javascript">
-	$popup = genericAjaxPopupFetch('peek');
+$(function() {
+	var $popup = genericAjaxPopupFetch('peek');
 	$popup.one('popup_open', function(event,ui) {
-		$(this).dialog('option','title',"{'datacenter.sensors.common.sensor'|devblocks_translate|capitalize|escape:'javascript' nofilter}");
+		$popup.dialog('option','title',"{'datacenter.sensors.common.sensor'|devblocks_translate|capitalize|escape:'javascript' nofilter}");
 		
-		$(this).find('button.chooser_watcher').each(function() {
+		$popup.find('button.chooser_watcher').each(function() {
 			ajax.chooser(this,'cerberusweb.contexts.worker','add_watcher_ids', { autocomplete:true });
 		});
 		
-		$(this).find('textarea[name=comment]').keyup(function() {
+		$popup.find('textarea[name=comment]').keyup(function() {
 			if($(this).val().length > 0) {
 				$(this).next('DIV.notify').show();
 			} else {
@@ -109,10 +111,11 @@
 			ajax.chooser(this,'cerberusweb.contexts.worker','notify_worker_ids', { autocomplete:true });
 		});
 		
-		$(this).find('select[name=extension_id]').change(function() {
+		$popup.find('select[name=extension_id]').change(function() {
 			genericAjaxGet($(this).next('DIV.params'), 'c=datacenter.sensors&a=renderConfigExtension&extension_id=' + $(this).val() + "&sensor_id={$model->id}");
 		});
 		
-		$(this).find('input:text:first').focus();
-	} );
+		$popup.find('input:text:first').focus();
+	});
+});
 </script>

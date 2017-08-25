@@ -172,6 +172,7 @@ class Page_Sensors extends CerberusPageExtension {
 	function render() {
 	}
 	
+	// [TODO] Card/verify
 	function savePeekAction() {
 		@$id = DevblocksPlatform::importGPC($_REQUEST['id'],'integer',0);
 		@$view_id = DevblocksPlatform::importGPC($_REQUEST['view_id'],'string','');
@@ -184,7 +185,10 @@ class Page_Sensors extends CerberusPageExtension {
 		$active_worker = CerberusApplication::getActiveWorker();
 		
 		if($do_delete && !empty($id)) { // delete
-			// [TODO] ACL
+			if(!$active_worker->hasPriv(sprintf("contexts.%s.delete", CerberusContexts::CONTEXT_SENSOR)))
+				return;
+				//throw new Exception_DevblocksAjaxValidationError(DevblocksPlatform::translate('error.core.no_acl.delete'));
+			
 			DAO_DatacenterSensor::delete($id);
 			
 		} else {
@@ -206,9 +210,15 @@ class Page_Sensors extends CerberusPageExtension {
 			);
 			
 			if(!empty($id)) { // update
+				//if(!DAO_DatacenterSensor::validate($fields, $error, $id))
+				//	throw new Exception_DevblocksAjaxValidationError($error);
+				
 				DAO_DatacenterSensor::update($id, $fields);
 				
 			} else { // create
+				//if(!DAO_DatacenterSensor::validate($fields, $error))
+				//	throw new Exception_DevblocksAjaxValidationError($error);
+				
 				$id = DAO_DatacenterSensor::create($fields);
 				
 				// View marquee

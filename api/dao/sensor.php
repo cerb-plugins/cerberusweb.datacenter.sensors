@@ -89,6 +89,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			->addField(self::TAG)
 			->string()
 			->setMaxLength(255)
+			->setUnique(get_class())
 			;
 		// int(10) unsigned
 		$validation

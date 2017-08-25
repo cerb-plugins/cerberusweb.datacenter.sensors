@@ -142,7 +142,7 @@ class ChRest_Sensors extends Extension_RestController implements IExtensionRestC
 		
 		// ACL
 //		if(!$worker->hasPriv('...'))
-//			$this->error("Access denied.");
+//			$this->error(self::ERRNO_ACL);
 
 		$container = $this->search(array(
 			array('id', '=', $id),
