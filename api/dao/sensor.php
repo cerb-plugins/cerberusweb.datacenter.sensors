@@ -96,7 +96,12 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			->addField(self::UPDATED)
 			->timestamp()
 			;
-
+		$validation
+			->addField('_links')
+			->string()
+			->setMaxLength(65535)
+			;
+			
 		return $validation->getFields();
 	}
 	
@@ -115,6 +120,9 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 	static function update($ids, $fields, $check_deltas=true) {
 		if(!is_array($ids))
 			$ids = array($ids);
+		
+		$context = CerberusContexts::CONTEXT_SENSOR;
+		self::_updateAbstract($context, $ids, $fields);
 		
 		// Make a diff for the requested objects in batches
 		
@@ -774,7 +782,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 					
 				// Valid custom fields
 				default:
-					if('cf_' == substr($field_key,0,3))
+					if(DevblocksPlatform::strStartsWith($field_key, 'cf_'))
 						$pass = $this->_canSubtotalCustomField($field_key);
 					break;
 			}
@@ -1219,6 +1227,10 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 class Context_Sensor extends Extension_DevblocksContext implements IDevblocksContextProfile, IDevblocksContextPeek {
 	const ID = CerberusContexts::CONTEXT_SENSOR;
 	
+	static function isCreateableByActor(array $fields, $actor) {
+		return true;
+	}
+	
 	static function isReadableByActor($models, $actor) {
 		// Everyone can view
 		return CerberusContexts::allowEverything($models);
@@ -1394,6 +1406,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 	function getKeyToDaoFieldMap() {
 		return [
 			'id' => DAO_DatacenterSensor::ID,
+			'links' => '_links',
 			'metric' => DAO_DatacenterSensor::METRIC,
 			'metric_type' => DAO_DatacenterSensor::METRIC_TYPE,
 			'metric_delta' => DAO_DatacenterSensor::METRIC_DELTA,
@@ -1403,6 +1416,16 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			'tag' => DAO_DatacenterSensor::TAG,
 			'updated' => DAO_DatacenterSensor::UPDATED,
 		];
+	}
+	
+	function getDaoFieldsFromKeyAndValue($key, $value, &$out_fields, &$error) {
+		switch(DevblocksPlatform::strLower($key)) {
+			case 'links':
+				$this->_getDaoFieldsLinks($value, $out_fields, $error);
+				break;
+		}
+		
+		return true;
 	}
 
 	function lazyLoadContextValues($token, $dictionary) {

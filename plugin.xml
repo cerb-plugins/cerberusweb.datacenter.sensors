@@ -4,21 +4,21 @@
 	<name>Sensors</name>
 	<description>This plugin adds flexible Sensor objects that can be used for network and server monitoring, operational intelligence, etc.</description>
 	<author>Webgroup Media, LLC.</author>
-	<version>0.9.0</version>
+	<version>0.9.1</version>
 	<link>http://www.cerbweb.com/book/latest/plugins/cerberusweb.datacenter.sensors.html</link>
 	<image>plugin.png</image>
 
 	<!-- Requirements -->
 
 	<requires>
-		<app_version min="8.2" max="8.2.99" />
+		<app_version min="8.2.1" max="8.2.99" />
 		<php_extension name="curl" />
 	</requires>
 
 	<!-- Plugin Dependencies -->
 	
 	<dependencies>
-		<require plugin_id="cerberusweb.core" version="8.2.0" />
+		<require plugin_id="cerberusweb.core" version="8.2.1" />
 	</dependencies>
 
 	<!-- Patches -->
@@ -63,7 +63,7 @@
 	</activity_points>
 
 	<!-- Extensions -->
- 
+
 	<extensions>
 
 		<!-- Contexts -->
@@ -88,8 +88,8 @@
 				<param key="options">
 					<value>
 						<data key="custom_fields" />
-						<data key="create" />
 						<data key="links" />
+						<data key="records" />
 						<data key="search" />
 						<data key="va_variable" />
 						<data key="watchers" />
