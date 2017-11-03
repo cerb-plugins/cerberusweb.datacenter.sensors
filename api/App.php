@@ -210,16 +210,24 @@ class Page_Sensors extends CerberusPageExtension {
 			);
 			
 			if(!empty($id)) { // update
-				//if(!DAO_DatacenterSensor::validate($fields, $error, $id))
-				//	throw new Exception_DevblocksAjaxValidationError($error);
+				if(!DAO_DatacenterSensor::validate($fields, $error, $id))
+					throw new Exception_DevblocksAjaxValidationError($error);
+				
+				if(!DAO_DatacenterSensor::onBeforeUpdateByActor($active_worker, $fields, $id, $error))
+					throw new Exception_DevblocksAjaxValidationError($error);
 				
 				DAO_DatacenterSensor::update($id, $fields);
+				DAO_DatacenterSensor::onUpdateByActor($active_worker, $fields, $id);
 				
 			} else { // create
-				//if(!DAO_DatacenterSensor::validate($fields, $error))
-				//	throw new Exception_DevblocksAjaxValidationError($error);
+				if(!DAO_DatacenterSensor::validate($fields, $error))
+					throw new Exception_DevblocksAjaxValidationError($error);
+				
+				if(!DAO_DatacenterSensor::onBeforeUpdateByActor($active_worker, $fields, null, $error))
+					throw new Exception_DevblocksAjaxValidationError($error);
 				
 				$id = DAO_DatacenterSensor::create($fields);
+				DAO_DatacenterSensor::onUpdateByActor($active_worker, $fields, $id);
 				
 				// View marquee
 				if(!empty($id) && !empty($view_id)) {
