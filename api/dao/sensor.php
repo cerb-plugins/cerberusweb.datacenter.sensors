@@ -1488,7 +1488,6 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		$view->renderSortAsc = false;
 		$view->renderLimit = 10;
 		$view->renderTemplate = 'contextlinks_chooser';
-		$view->renderFilters = false;
 		return $view;
 	}
 	

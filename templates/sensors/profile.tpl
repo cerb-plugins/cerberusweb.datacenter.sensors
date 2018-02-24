@@ -1,4 +1,4 @@
-{$page_context = 'cerberusweb.contexts.datacenter.sensor'}
+{$page_context = CerberusContexts::CONTEXT_SENSOR}
 {$page_context_id = $sensor->id}
 {$is_writeable = Context_Sensor::isWriteableByActor($sensor, $active_worker)}
 

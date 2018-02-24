@@ -1,4 +1,4 @@
-{$view_context = 'cerberusweb.contexts.datacenter.sensor'}
+{$view_context = CerberusContexts::CONTEXT_SENSOR}
 {$view_fields = $view->getColumnsAvailable()}
 {$results = $view->getData()}
 {$total = $results[1]}
