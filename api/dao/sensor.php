@@ -444,12 +444,6 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			'tables' => &$tables,
 		);
 		
-		array_walk_recursive(
-			$params,
-			array('DAO_DatacenterSensor', '_translateVirtualParameters'),
-			$args
-		);
-		
 		return array(
 			'primary_table' => 'datacenter_sensor',
 			'select' => $select_sql,
@@ -457,23 +451,6 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			'where' => $where_sql,
 			'sort' => $sort_sql,
 		);
-	}
-	
-	private static function _translateVirtualParameters($param, $key, &$args) {
-		if(!is_a($param, 'DevblocksSearchCriteria'))
-			return;
-		
-		$from_context = CerberusContexts::CONTEXT_SENSOR;
-		$from_index = 'datacenter_sensor.id';
-		
-		$param_key = $param->field;
-		settype($param_key, 'string');
-		switch($param_key) {
-			case SearchFields_DatacenterSensor::VIRTUAL_HAS_FIELDSET:
-				self::_searchComponentsVirtualHasFieldset($param, $from_context, $from_index, $args['join_sql'], $args['where_sql']);
-				break;
-		}
-		
 	}
 	
 	/**
@@ -588,6 +565,10 @@ class SearchFields_DatacenterSensor extends DevblocksSearchFields {
 				return self::_getWhereSQLFromContextLinksField($param, CerberusContexts::CONTEXT_SENSOR, self::getPrimaryKey());
 				break;
 				
+			case self::VIRTUAL_HAS_FIELDSET:
+				return self::_getWhereSQLFromVirtualSearchSqlField($param, CerberusContexts::CONTEXT_CUSTOM_FIELDSET, sprintf('SELECT context_id FROM context_to_custom_fieldset WHERE context = %s AND custom_fieldset_id IN (%%s)', Cerb_ORMHelper::qstr(CerberusContexts::CONTEXT_SENSOR)), self::getPrimaryKey());
+				break;
+				
 			case self::VIRTUAL_WATCHERS:
 				return self::_getWhereSQLFromWatchersField($param, CerberusContexts::CONTEXT_SENSOR, self::getPrimaryKey());
 				break;
@@ -695,6 +676,16 @@ class Model_DatacenterSensor {
 		
 		return $pass;
 	}
+	
+	function getSensorText() {
+		$labels = [
+			'O' => 'OK', //DevblocksPlatform::translateCapitalized(''),
+			'W' => 'Warning', //DevblocksPlatform::translateCapitalized(''),
+			'C' => 'Critical', //DevblocksPlatform::translateCapitalized(''),
+		];
+		
+		return @$labels[$this->status];
+	}
 };
 
 class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Subtotals, IAbstractView_QuickSearch {
@@ -723,11 +714,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 			SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK,
 			SearchFields_DatacenterSensor::VIRTUAL_HAS_FIELDSET,
 			SearchFields_DatacenterSensor::VIRTUAL_WATCHERS,
-		));
-		
-		$this->addParamsHidden(array(
-			SearchFields_DatacenterSensor::ID,
-			SearchFields_DatacenterSensor::PARAMS_JSON,
 		));
 		
 		$this->doResetCriteria();
@@ -876,6 +862,14 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 					'type' => DevblocksSearchCriteria::TYPE_NUMBER,
 					'options' => array('param_key' => SearchFields_DatacenterSensor::FAIL_COUNT),
 				),
+			'fieldset' =>
+				array(
+					'type' => DevblocksSearchCriteria::TYPE_VIRTUAL,
+					'options' => array('param_key' => SearchFields_DatacenterSensor::VIRTUAL_HAS_FIELDSET),
+					'examples' => [
+						['type' => 'search', 'context' => CerberusContexts::CONTEXT_CUSTOM_FIELDSET, 'qr' => 'context:' . CerberusContexts::CONTEXT_SENSOR],
+					]
+				),
 			'id' => 
 				array(
 					'type' => DevblocksSearchCriteria::TYPE_NUMBER,
@@ -946,7 +940,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		
 		// Add quick search links
 		
-		$fields = self::_appendVirtualFiltersFromQuickSearchContexts('links', $fields, 'links');
+		$fields = self::_appendVirtualFiltersFromQuickSearchContexts('links', $fields, 'links', SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK);
 		
 		// Add searchable custom fields
 		
@@ -978,6 +972,10 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 	
 	function getParamFromQuickSearchFieldTokens($field, $tokens) {
 		switch($field) {
+			case 'fieldset':
+				return DevblocksSearchCriteria::getVirtualQuickSearchParamFromTokens($field, $tokens, '*_has_fieldset');
+				break;
+			
 			case 'status':
 				$field_key = SearchFields_DatacenterSensor::STATUS;
 				$oper = null;
@@ -1062,70 +1060,6 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		}
 	}
 	
-	function renderCriteria($field) {
-		$tpl = DevblocksPlatform::services()->template();
-		$tpl->assign('id', $this->id);
-
-		switch($field) {
-			case SearchFields_DatacenterSensor::EXTENSION_ID:
-			case SearchFields_DatacenterSensor::METRIC:
-			case SearchFields_DatacenterSensor::METRIC_TYPE:
-			case SearchFields_DatacenterSensor::NAME:
-			case SearchFields_DatacenterSensor::OUTPUT:
-			case SearchFields_DatacenterSensor::TAG:
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__string.tpl');
-				break;
-				
-			case SearchFields_DatacenterSensor::ID:
-			case SearchFields_DatacenterSensor::FAIL_COUNT:
-			case SearchFields_DatacenterSensor::METRIC_DELTA:
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__number.tpl');
-				break;
-				
-			case SearchFields_DatacenterSensor::IS_DISABLED:
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__bool.tpl');
-				break;
-				
-			case SearchFields_DatacenterSensor::UPDATED:
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__date.tpl');
-				break;
-				
-			case SearchFields_DatacenterSensor::STATUS:
-				$options = array(
-					'O' => 'OK',
-					'W' => 'Warning',
-					'C' => 'Critical',
-				);
-				
-				$tpl->assign('options', $options);
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__list.tpl');
-				break;
-				
-			case SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK:
-				$contexts = Extension_DevblocksContext::getAll(false);
-				$tpl->assign('contexts', $contexts);
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__context_link.tpl');
-				break;
-				
-			case SearchFields_DatacenterSensor::VIRTUAL_HAS_FIELDSET:
-				$this->_renderCriteriaHasFieldset($tpl, CerberusContexts::CONTEXT_SENSOR);
-				break;
-				
-			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
-				$tpl->display('devblocks:cerberusweb.core::internal/views/criteria/__context_worker.tpl');
-				break;
-				
-			default:
-				// Custom Fields
-				if('cf_' == substr($field,0,3)) {
-					$this->_renderCriteriaCustomField($tpl, substr($field,3));
-				} else {
-					echo ' ';
-				}
-				break;
-		}
-	}
-
 	function renderCriteriaParam($param) {
 		$field = $param->field;
 		$values = !is_array($param->value) ? array($param->value) : $param->value;
@@ -1260,6 +1194,73 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		$url_writer = DevblocksPlatform::services()->url();
 		$url = $url_writer->writeNoProxy('c=profiles&type=sensor&id='.$context_id, true);
 		return $url;
+	}
+	
+	function profileGetFields($model=null) {
+		$translate = DevblocksPlatform::getTranslationService();
+		$properties = [];
+		
+		/* @var $model Model_DatacenterSensor */
+		
+		if(is_null($model))
+			$model = new Model_DatacenterSensor();
+		
+		$properties['name'] = array(
+			'label' => mb_ucfirst($translate->_('common.name')),
+			'type' => Model_CustomField::TYPE_LINK,
+			'value' => $model->id,
+			'params' => [
+				'context' => self::ID,
+			],
+		);
+		
+		$properties['status'] = array(
+			'label' => mb_ucfirst($translate->_('common.status')),
+			'type' => Model_CustomField::TYPE_SINGLE_LINE,
+			'value' => $model->getSensorText(),
+		);
+		
+		$properties['updated'] = array(
+			'label' => DevblocksPlatform::translateCapitalized('common.updated'),
+			'type' => Model_CustomField::TYPE_DATE,
+			'value' => $model->updated,
+		);
+		
+		$properties['type'] = array(
+			'label' => mb_ucfirst($translate->_('common.type')),
+			'type' => Model_CustomField::TYPE_SINGLE_LINE,
+			'value' => null,
+		);
+		
+		if(null != ($mft_sensor_type = DevblocksPlatform::getExtension($model->extension_id, false))) {
+			$properties['type']['value'] = $mft_sensor_type->name;
+		}
+		
+		$properties['tag'] = array(
+			'label' => mb_ucfirst($translate->_('common.tag')),
+			'type' => Model_CustomField::TYPE_SINGLE_LINE,
+			'value' => $model->tag,
+		);
+		
+		$properties['is_disabled'] = array(
+			'label' => mb_ucfirst($translate->_('dao.datacenter_sensor.is_disabled')),
+			'type' => Model_CustomField::TYPE_CHECKBOX,
+			'value' => $model->is_disabled,
+		);
+		
+		$properties['fail_count'] = array(
+			'label' => mb_ucfirst($translate->_('dao.datacenter_sensor.fail_count')),
+			'type' => Model_CustomField::TYPE_NUMBER,
+			'value' => $model->fail_count,
+		);
+		
+		$properties['metric_type'] = array(
+			'label' => mb_ucfirst($translate->_('dao.datacenter_sensor.metric_type')),
+			'type' => Model_CustomField::TYPE_SINGLE_LINE,
+			'value' => $model->metric_type,
+		);
+		
+		return $properties;
 	}
 	
 	function getMeta($context_id) {
