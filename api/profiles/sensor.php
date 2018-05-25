@@ -25,6 +25,6 @@ class PageSection_ProfilesSensor extends Extension_PageSection {
 		
 		$context = CerberusContexts::CONTEXT_SENSOR;
 		
-		Page_Profiles::renderProfile($context, $context_id);
+		Page_Profiles::renderProfile($context, $context_id, $stack);
 	}
 };

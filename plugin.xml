@@ -4,7 +4,7 @@
 	<name>Sensors</name>
 	<description>This plugin adds flexible Sensor objects that can be used for network and server monitoring, operational intelligence, etc.</description>
 	<author>Webgroup Media, LLC.</author>
-	<version>0.11.0</version>
+	<version>0.11.1</version>
 	<link>http://www.cerbweb.com/book/latest/plugins/cerberusweb.datacenter.sensors.html</link>
 	<image>plugin.png</image>
 
@@ -25,6 +25,7 @@
 	
 	<patches>
 		<patch version="1.0.0" revision="2" file="patches/1.0.0.php" />
+		<patch version="9.0.0" revision="3" file="patches/9.0.0.php" />
 	</patches>
 	
 	<!-- Exported Classes -->
