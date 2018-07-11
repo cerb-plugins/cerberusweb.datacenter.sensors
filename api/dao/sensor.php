@@ -585,6 +585,37 @@ class SearchFields_DatacenterSensor extends DevblocksSearchFields {
 		return false;
 	}
 	
+	static function getFieldForSubtotalKey($key, array $query_fields, array $search_fields, $primary_key) {
+		switch($key) {
+		}
+		
+		return parent::getFieldForSubtotalKey($key, $query_fields, $search_fields, $primary_key);
+	}
+	
+	static function getLabelsForKeyValues($key, $values) {
+		switch($key) {
+			case SearchFields_DatacenterSensor::ID:
+				$models = DAO_DatacenterSensor::getIds($values);
+				return array_column(DevblocksPlatform::objectsToArrays($models), 'name', 'id');
+				break;
+				
+			case SearchFields_DatacenterSensor::EXTENSION_ID:
+				return parent::_getLabelsForKeyExtensionValues(Extension_Sensor::POINT);
+				break;
+				
+			case SearchFields_DatacenterSensor::STATUS:
+				$label_map = array(
+					'O' => 'OK',
+					'W' => 'Warning',
+					'C' => 'Critical',
+				);
+				return $label_map;
+				break;
+		}
+		
+		return parent::getLabelsForKeyValues($key, $values);
+	}
+	
 	/**
 	 * @return DevblocksSearchField[]
 	 */
@@ -790,23 +821,16 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		
 		switch($column) {
 			case SearchFields_DatacenterSensor::EXTENSION_ID:
-				$label_map = array();
-				$manifests = DevblocksPlatform::getExtensions('cerberusweb.datacenter.sensor', false);
-				if(is_array($manifests))
-				foreach($manifests as $k => $mft) {
-					$label_map[$k] = $mft->name;
-				}
-				
+				$label_map = function(array $values) use ($column) {
+					return SearchFields_DatacenterSensor::getLabelsForKeyValues($column, $values);
+				};
 				$counts = $this->_getSubtotalCountForStringColumn($context, $column, $label_map);
 				break;
 				
 			case SearchFields_DatacenterSensor::STATUS:
-				$label_map = array(
-					'O' => 'OK',
-					'W' => 'Warning',
-					'C' => 'Critical',
-				);
-				
+				$label_map = function(array $values) use ($column) {
+					return SearchFields_DatacenterSensor::getLabelsForKeyValues($column, $values);
+				};
 				$counts = $this->_getSubtotalCountForStringColumn($context, $column, $label_map, 'in', 'options[]');
 				break;
 				
@@ -1069,20 +1093,10 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				parent::_renderCriteriaParamBoolean($param);
 				break;
 			
+			case SearchFields_DatacenterSensor::EXTENSION_ID:
 			case SearchFields_DatacenterSensor::STATUS:
-				$options = array(
-					'O' => 'OK',
-					'W' => 'Warning',
-					'C' => 'Critical',
-				);
-				
-				$output = array();
-				
-				foreach($values as $v) {
-					$output[] = DevblocksPlatform::strEscapeHtml($options[$v]);
-				}
-				
-				echo implode(' or ', $output);
+				$label_map = SearchFields_DatacenterSensor::getLabelsForKeyValues($field, $values);
+				parent::_renderCriteriaParamString($param, $label_map);
 				break;
 				
 			default:

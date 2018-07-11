@@ -7,73 +7,65 @@
 <input type="hidden" name="do_delete" value="0">
 <input type="hidden" name="_csrf_token" value="{$session.csrf_token}">
 
-<fieldset class="peek">
-	<legend>{'common.properties'|devblocks_translate}</legend>
+<table cellspacing="0" cellpadding="2" border="0" width="98%" style="margin-bottom:10px;">
+	<tr>
+		<td width="1%" nowrap="nowrap" valign="top" align="right">{'common.name'|devblocks_translate|capitalize}:</td>
+		<td width="99%">
+			<input type="text" name="name" value="{$model->name}" style="width:98%;">
+		</td>
+	</tr>
 	
-	<table cellspacing="0" cellpadding="2" border="0" width="98%">
-		<tr>
-			<td width="1%" nowrap="nowrap" valign="top" align="right">{'common.name'|devblocks_translate|capitalize}:</td>
-			<td width="99%">
-				<input type="text" name="name" value="{$model->name}" style="width:98%;">
-			</td>
-		</tr>
-		
-		<tr>
-			<td width="1%" nowrap="nowrap" valign="top" align="right">{'common.tag'|devblocks_translate|capitalize}:</td>
-			<td width="99%">
-				<input type="text" name="tag" value="{$model->tag}" style="width:98%;">
-			</td>
-		</tr>
-		
-		{if !empty($sensor_manifests)}
-		<tr>
-			<td width="1%" nowrap="nowrap" valign="top" align="right">{'dao.datacenter_sensor.extension_id'|devblocks_translate|capitalize}:</td>
-			<td width="99%">
-				<select name="extension_id">
-					{foreach from=$sensor_manifests item=sensor_manifest key=k}
-						<option value="{$k}" {if $k==$model->extension_id}selected="selected"{/if}>{$sensor_manifest->name}</option>
-					{/foreach}
-				</select>
-				
-				<div class="params" style="margin:0px 5px;padding:5px;background-color:rgb(245,245,245);">
-					{if isset($sensor_manifests.{$model->extension_id})}
-						{$sensor_ext_id = $model->extension_id}
-					{else}
-						{$sensor_ext_id = 'cerberusweb.datacenter.sensor.external'}
-					{/if}
-					
-					{$sensor_ext = $sensor_manifests.{$sensor_ext_id}->createInstance()}
-					{if method_exists($sensor_ext,'renderConfig')}
-						{$sensor_ext->renderConfig($model->params)}
-					{/if}
-				</div>
-			</td>
-		</tr>
-		{/if}
-		
-		{* Watchers *}
-		<tr>
-			<td width="0%" nowrap="nowrap" valign="top" align="right">{'common.watchers'|devblocks_translate|capitalize}: </td>
-			<td width="100%">
-				{if empty($model->id)}
-					<button type="button" class="chooser_watcher"><span class="glyphicons glyphicons-search"></span></button>
-					<ul class="chooser-container bubbles" style="display:block;"></ul>
+	<tr>
+		<td width="1%" nowrap="nowrap" valign="top" align="right">{'common.tag'|devblocks_translate|capitalize}:</td>
+		<td width="99%">
+			<input type="text" name="tag" value="{$model->tag}" style="width:98%;">
+		</td>
+	</tr>
+	
+	{if !empty($sensor_manifests)}
+	<tr>
+		<td width="1%" nowrap="nowrap" valign="top" align="right">{'dao.datacenter_sensor.extension_id'|devblocks_translate|capitalize}:</td>
+		<td width="99%">
+			<select name="extension_id">
+				{foreach from=$sensor_manifests item=sensor_manifest key=k}
+					<option value="{$k}" {if $k==$model->extension_id}selected="selected"{/if}>{$sensor_manifest->name}</option>
+				{/foreach}
+			</select>
+			
+			<div class="params" style="margin:0px 5px;padding:5px;background-color:rgb(245,245,245);">
+				{if isset($sensor_manifests.{$model->extension_id})}
+					{$sensor_ext_id = $model->extension_id}
 				{else}
-					{$object_watchers = DAO_ContextLink::getContextLinks(CerberusContexts::CONTEXT_SENSOR, array($model->id), CerberusContexts::CONTEXT_WORKER)}
-					{include file="devblocks:cerberusweb.core::internal/watchers/context_follow_button.tpl" context=CerberusContexts::CONTEXT_SENSOR context_id=$model->id full=true}
+					{$sensor_ext_id = 'cerberusweb.datacenter.sensor.external'}
 				{/if}
-			</td>
-		</tr>
-		
-	</table>
-</fieldset>
-
-{if !empty($custom_fields)}
-<fieldset class="peek">
-	<legend>{'common.custom_fields'|devblocks_translate}</legend>
-	{include file="devblocks:cerberusweb.core::internal/custom_fields/bulk/form.tpl" bulk=false}
-</fieldset>
-{/if}
+				
+				{$sensor_ext = $sensor_manifests.{$sensor_ext_id}->createInstance()}
+				{if method_exists($sensor_ext,'renderConfig')}
+					{$sensor_ext->renderConfig($model->params)}
+				{/if}
+			</div>
+		</td>
+	</tr>
+	{/if}
+	
+	{* Watchers *}
+	<tr>
+		<td width="0%" nowrap="nowrap" valign="top" align="right">{'common.watchers'|devblocks_translate|capitalize}: </td>
+		<td width="100%">
+			{if empty($model->id)}
+				<button type="button" class="chooser_watcher"><span class="glyphicons glyphicons-search"></span></button>
+				<ul class="chooser-container bubbles" style="display:block;"></ul>
+			{else}
+				{$object_watchers = DAO_ContextLink::getContextLinks(CerberusContexts::CONTEXT_SENSOR, array($model->id), CerberusContexts::CONTEXT_WORKER)}
+				{include file="devblocks:cerberusweb.core::internal/watchers/context_follow_button.tpl" context=CerberusContexts::CONTEXT_SENSOR context_id=$model->id full=true}
+			{/if}
+		</td>
+	</tr>
+	
+	{if !empty($custom_fields)}
+	{include file="devblocks:cerberusweb.core::internal/custom_fields/bulk/form.tpl" bulk=false tbody=true}
+	{/if}
+</table>
 
 {include file="devblocks:cerberusweb.core::internal/custom_fieldsets/peek_custom_fieldsets.tpl" context=$peek_context context_id=$model->id}
 
