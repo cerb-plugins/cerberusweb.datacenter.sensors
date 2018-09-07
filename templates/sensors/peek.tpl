@@ -1,5 +1,5 @@
 {$peek_context = CerberusContexts::CONTEXT_SENSOR}
-<form action="{devblocks_url}{/devblocks_url}" method="post" id="frmSensor">
+<form action="{devblocks_url}{/devblocks_url}" method="post" id="frmSensor" onsubmit="return false;">
 <input type="hidden" name="c" value="datacenter.sensors">
 <input type="hidden" name="a" value="savePeek">
 <input type="hidden" name="view_id" value="{$view_id}">
@@ -57,7 +57,7 @@
 				<ul class="chooser-container bubbles" style="display:block;"></ul>
 			{else}
 				{$object_watchers = DAO_ContextLink::getContextLinks(CerberusContexts::CONTEXT_SENSOR, array($model->id), CerberusContexts::CONTEXT_WORKER)}
-				{include file="devblocks:cerberusweb.core::internal/watchers/context_follow_button.tpl" context=CerberusContexts::CONTEXT_SENSOR context_id=$model->id full=true}
+				{include file="devblocks:cerberusweb.core::internal/watchers/context_follow_button.tpl" context=CerberusContexts::CONTEXT_SENSOR context_id=$model->id full_label=true}
 			{/if}
 		</td>
 	</tr>
