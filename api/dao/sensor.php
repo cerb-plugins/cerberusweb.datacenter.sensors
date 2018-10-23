@@ -232,12 +232,6 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			// [TODO] Merge with 'Record changed'
 			// This can also detect when the status changes OK->PROBLEM or PROBLEM->OK
 			
-			$statuses = array(
-				'O' => 'OK',
-				'W' => 'Warning',
-				'C' => 'Critical',
-			);
-			
 			@$status = $change_fields[DAO_DatacenterSensor::STATUS];
 			
 			// If the status changed
@@ -332,7 +326,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 	 * @return Model_DatacenterSensor[]
 	 */
 	static private function _getObjectsFromResult($rs) {
-		$objects = array();
+		$objects = [];
 		
 		if(!($rs instanceof mysqli_result))
 			return false;
@@ -353,7 +347,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			$object->output = $row['output'];
 			
 			@$json = json_decode($row['params_json'], true);
-			$object->params = !empty($json) ? $json : array();
+			$object->params = !empty($json) ? $json : [];
 			
 			$objects[$object->id] = $object;
 		}
@@ -398,7 +392,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 	public static function getSearchQueryComponents($columns, $params, $sortBy=null, $sortAsc=null) {
 		$fields = SearchFields_DatacenterSensor::getFields();
 		
-		list($tables,$wheres) = parent::_parseSearchParams($params, $columns, 'SearchFields_DatacenterSensor', $sortBy);
+		list(,$wheres) = parent::_parseSearchParams($params, $columns, 'SearchFields_DatacenterSensor', $sortBy);
 		
 		$select_sql = sprintf("SELECT ".
 			"datacenter_sensor.id as %s, ".
@@ -436,14 +430,6 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 			
 		$sort_sql = self::_buildSortClause($sortBy, $sortAsc, $fields, $select_sql, 'SearchFields_DatacenterSensor');
 	
-		// Translate virtual fields
-		
-		$args = array(
-			'join_sql' => &$join_sql,
-			'where_sql' => &$where_sql,
-			'tables' => &$tables,
-		);
-		
 		return array(
 			'primary_table' => 'datacenter_sensor',
 			'select' => $select_sql,
@@ -493,7 +479,7 @@ class DAO_DatacenterSensor extends Cerb_ORMHelper {
 		if(!($rs instanceof mysqli_result))
 			return false;
 		
-		$results = array();
+		$results = [];
 		
 		while($row = mysqli_fetch_assoc($rs)) {
 			$object_id = intval($row[SearchFields_DatacenterSensor::ID]);
@@ -681,7 +667,7 @@ class Model_DatacenterSensor {
 	public $updated;
 	public $fail_count;
 	public $is_disabled;
-	public $params = array();
+	public $params = [];
 	public $metric;
 	public $metric_type;
 	public $metric_delta;
@@ -689,7 +675,7 @@ class Model_DatacenterSensor {
 	
 	function run() {
 		$pass = false;
-		$fields = array();
+		$fields = [];
 		
 		if(null != ($ext = DevblocksPlatform::getExtension($this->extension_id, true))) {
 			$pass = $ext->run($this->params, $fields);
@@ -777,7 +763,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 	function getSubtotalFields() {
 		$all_fields = $this->getParamsAvailable(true);
 		
-		$fields = array();
+		$fields = [];
 
 		if(is_array($all_fields))
 		foreach($all_fields as $field_key => $field_model) {
@@ -812,12 +798,12 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 	}
 	
 	function getSubtotalCounts($column) {
-		$counts = array();
+		$counts = [];
 		$fields = $this->getFields();
 		$context = CerberusContexts::CONTEXT_SENSOR;
 
 		if(!isset($fields[$column]))
-			return array();
+			return [];
 		
 		switch($column) {
 			case SearchFields_DatacenterSensor::EXTENSION_ID:
@@ -972,7 +958,7 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 		
 		// Engine/schema examples: Comments
 		
-		$ft_examples = array();
+		$ft_examples = [];
 		
 		if(false != ($schema = Extension_DevblocksSearchSchema::get(Search_CommentContent::ID))) {
 			if(false != ($engine = $schema->getEngine())) {
@@ -1003,11 +989,11 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 			case 'status':
 				$field_key = SearchFields_DatacenterSensor::STATUS;
 				$oper = null;
-				$patterns = array();
+				$patterns = [];
 				
 				CerbQuickSearchLexer::getOperArrayFromTokens($tokens, $oper, $patterns);
 				
-				$values = array();
+				$values = [];
 				
 				if(is_array($patterns))
 				foreach($patterns as $pattern) {
@@ -1138,22 +1124,22 @@ class View_DatacenterSensor extends C4_AbstractView implements IAbstractView_Sub
 				break;
 				
 			case SearchFields_DatacenterSensor::STATUS:
-				@$options = DevblocksPlatform::importGPC($_REQUEST['options'],'array',array());
+				@$options = DevblocksPlatform::importGPC($_REQUEST['options'],'array',[]);
 				$criteria = new DevblocksSearchCriteria($field,$oper,$options);
 				break;
 				
 			case SearchFields_DatacenterSensor::VIRTUAL_CONTEXT_LINK:
-				@$context_links = DevblocksPlatform::importGPC($_REQUEST['context_link'],'array',array());
+				@$context_links = DevblocksPlatform::importGPC($_REQUEST['context_link'],'array',[]);
 				$criteria = new DevblocksSearchCriteria($field,DevblocksSearchCriteria::OPER_IN,$context_links);
 				break;
 				
 			case SearchFields_DatacenterSensor::VIRTUAL_HAS_FIELDSET:
-				@$options = DevblocksPlatform::importGPC($_REQUEST['options'],'array',array());
+				@$options = DevblocksPlatform::importGPC($_REQUEST['options'],'array',[]);
 				$criteria = new DevblocksSearchCriteria($field,DevblocksSearchCriteria::OPER_IN,$options);
 				break;
 				
 			case SearchFields_DatacenterSensor::VIRTUAL_WATCHERS:
-				@$worker_ids = DevblocksPlatform::importGPC($_REQUEST['worker_id'],'array',array());
+				@$worker_ids = DevblocksPlatform::importGPC($_REQUEST['worker_id'],'array',[]);
 				$criteria = new DevblocksSearchCriteria($field,$oper,$worker_ids);
 				break;
 				
@@ -1381,7 +1367,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			$token_types = array_merge($token_types, $custom_field_types);
 		
 		// Token values
-		$token_values = array();
+		$token_values = [];
 		
 		$token_values['_context'] = self::ID;
 		$token_values['_types'] = $token_types;
@@ -1405,10 +1391,6 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 			$token_values['output'] = $object->output;
 			$token_values['status'] = isset($status_options[$object->status]) ? $status_options[$object->status] : '';
 			$token_values['updated'] = $object->updated;
-			
-			// URL
-			$url_writer = DevblocksPlatform::services()->url();
-			//$token_values['record_url'] = $url_writer->writeNoProxy(sprintf("c=example.object&id=%d-%s",$object->id, DevblocksPlatform::strToPermalink($object->name)), true);
 		}
 		
 		return true;
@@ -1429,6 +1411,19 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		];
 	}
 	
+	function getKeyMeta() {
+		$keys = parent::getKeyMeta();
+		
+		$keys['metric']['notes'] = "The metric's raw value";
+		$keys['metric_type']['notes'] = "The metric's type";
+		$keys['metric_delta']['notes'] = "The change in the metric between the last two samples";
+		$keys['output']['notes'] = "The metric's displayed value";
+		$keys['status']['notes'] = "`O` (OK), `W` (Warning), `C` (Critical)";
+		$keys['tag']['notes'] = "A human-friendly nickname for this sensor";
+		
+		return $keys;
+	}
+	
 	function getDaoFieldsFromKeyAndValue($key, $value, &$out_fields, &$error) {
 		switch(DevblocksPlatform::strLower($key)) {
 			case 'links':
@@ -1437,6 +1432,11 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		}
 		
 		return true;
+	}
+	
+	function lazyLoadGetKeys() {
+		$lazy_keys = parent::lazyLoadGetKeys();
+		return $lazy_keys;
 	}
 
 	function lazyLoadContextValues($token, $dictionary) {
@@ -1447,10 +1447,10 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		$context_id = $dictionary['id'];
 		
 		@$is_loaded = $dictionary['_loaded'];
-		$values = array();
+		$values = [];
 		
 		if(!$is_loaded) {
-			$labels = array();
+			$labels = [];
 			CerberusContexts::getContext($context, $context_id, $labels, $values, null, true, true);
 		}
 		
@@ -1479,8 +1479,6 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 	}
 	
 	function getChooserView($view_id=null) {
-		$active_worker = CerberusApplication::getActiveWorker();
-
 		if(empty($view_id))
 			$view_id = 'chooser_'.str_replace('.','_',$this->id).time().mt_rand(0,9999);
 		
@@ -1506,7 +1504,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 		return $view;
 	}
 	
-	function getView($context=null, $context_id=null, $options=array(), $view_id=null) {
+	function getView($context=null, $context_id=null, $options=[], $view_id=null) {
 		$view_id = !empty($view_id) ? $view_id : str_replace('.','_',$this->id);
 		
 		$defaults = C4_AbstractViewModel::loadFromClass($this->getViewClass());
@@ -1514,7 +1512,7 @@ class Context_Sensor extends Extension_DevblocksContext implements IDevblocksCon
 
 		$view = C4_AbstractViewLoader::getView($view_id, $defaults);
 		
-		$params_req = array();
+		$params_req = [];
 		
 		if(!empty($context) && !empty($context_id)) {
 			$params_req = array(
