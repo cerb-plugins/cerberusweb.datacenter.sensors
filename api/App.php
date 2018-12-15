@@ -2,6 +2,9 @@
 abstract class Extension_Sensor extends DevblocksExtension {
 	const POINT = 'cerberusweb.datacenter.sensor';
 	
+	/**
+	 * @internal
+	 */
 	static function getAll($as_instances=false) {
 		$results = DevblocksPlatform::getExtensions('cerberusweb.datacenter.sensor', $as_instances);
 		
