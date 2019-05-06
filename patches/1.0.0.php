@@ -1,6 +1,5 @@
 <?php
 $db = DevblocksPlatform::services()->database();
-$logger = DevblocksPlatform::services()->log();
 $tables = $db->metaTables();
 
 // ===========================================================================
@@ -36,7 +35,7 @@ if(!isset($tables['datacenter_sensor'])) {
 // ===========================================================================
 // Drop `server_id`
 
-list($columns, $indexes) = $db->metaTable('datacenter_sensor');
+list($columns,) = $db->metaTable('datacenter_sensor');
 
 if(isset($columns['server_id']))
 	$db->ExecuteMaster("ALTER TABLE datacenter_sensor DROP COLUMN server_id");
